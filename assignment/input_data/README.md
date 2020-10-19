@@ -33,8 +33,6 @@ Ya sea proveniente de la anotación del usuario de novo o de genbank, podemos ll
 
 Será necesario generar funciones que hagan diferentes partes del proceso.
 
-A) Determinar que tipo de formato de anotation. 
-
 Por tanto, sería conveniente y necesario determinar que tipo de formato tenemos para extraer la información de una forma u otra. Tanto GTF como GFF son formatos tabulares mientras GBF es un poco mas elavorado. 
 
 Para GBF existe un parseador específico de BioPython que se denominad SeqIO que ya incluye GBK (https://biopython.org/wiki/SeqIO). 
@@ -43,5 +41,14 @@ E.g.
     seq_record = SeqIO.parse(open(genbank_path), "genbank").next()
 
 Para GFF tambien existe algo ya implementado (https://biopython.org/wiki/GFF_Parsing).
+
+
+**Ejercicios**:
+A) Determinar que tipo de formato de anotation. 
+Como primer ejercicio, en la carpeta [example_denovo](../../data/example_denovo) esta la misma información en format GFF y formato GBK. Intenta generar una funcion de python donde dado un fichero, permita conocer que formato presenta.
+
+B) Extrae las secuencias proteicas de ambos tipos de ficheros. En la misma carpeta example_denovo esta el genoma, que lo necesitaras para extraer las coordenadas y el fichero con las proteínas extraidas originales.
+
+
 
 
