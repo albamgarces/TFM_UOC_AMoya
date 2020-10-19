@@ -44,10 +44,14 @@ Para GFF tambien existe algo ya implementado (https://biopython.org/wiki/GFF_Par
 
 
 **Ejercicios**:
-A) Determinar que tipo de formato de anotation. 
+
+A) Determinar formato de anotation. 
+
 Como primer ejercicio, en la carpeta [example_denovo](../../data/example_denovo) esta la misma información en format GFF y formato GBK. Intenta generar una funcion de python donde dado un fichero, permita conocer que formato presenta.
 
-B) Extrae las secuencias proteicas de ambos tipos de ficheros. En la misma carpeta example_denovo esta el genoma, que lo necesitaras para extraer las coordenadas y el fichero con las proteínas extraidas originales.
+B) Extraer secuencias proteicas. 
+
+En la misma carpeta example_denovo esta el genoma, que lo necesitaras para extraer las coordenadas y el fichero con las proteínas extraidas originales. A partir de ambos tipos de ficheros de anotación extrae las secuencias codificantes de las proteínas.
 
 
 
