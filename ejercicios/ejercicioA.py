@@ -1,0 +1,21 @@
+'''
+Created on 20 oct. 2020
+
+@author: alba
+'''
+
+if __name__ == '__main__':
+    pass
+
+# file_name = input("Input file name:")
+# name_parts = file_name.split(".")
+# print(name_parts)
+
+
+def extension ():
+    import os.path
+    file_name = input("Input file name:")
+    name, extension = os.path.splitext(file_name)
+    print ("The file extension is {}". format(extension))
+    
+extension()
