@@ -25,7 +25,7 @@ def extension (file_name):
             for rec in seq_rec:
                 feats = [feat for feat in rec.features if feat.type == "CDS"]
                 for feat in feats:
-                    print ("gene: ", feat.qualifiers["locus_tag"][0])
+                    print ("locus_tag: ", feat.qualifiers["locus_tag"][0])
                     print("product: ", feat.qualifiers["product"])
                     print (feat.qualifiers["translation"])
         else: 
@@ -34,17 +34,3 @@ def extension (file_name):
         print("This file is not compatible")
 extension("example_annot.gbf")   
 
-# def extension (file_name):
-#     compt = {".gbf", ".gff", ".fna", ".faa"}
-#     name, extension = os.path.splitext(file_name)
-#     if extension in compt:
-#         if extension == ".gbf":
-#             from Bio import SeqIO
-#             for seq_record in SeqIO.parse("/home/alba/git/TFM_UOC_AMoya/data/example_denovo/example_annot.gbf",
-#                                       "genbank"):
-#                 print(seq_record.features)
-#         else: 
-#             print ("The file extension is {}". format(extension))        
-#     else:
-#         print("This file is not compatible")
-# extension("example_annot.gbf")
