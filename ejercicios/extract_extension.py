@@ -11,11 +11,13 @@ if __name__ == '__main__':
 # name_parts = file_name.split(".")
 # print(name_parts)
 
+#extract extension function
 
-def extension ():
+def extension (file_name):
     import os.path
-    file_name = input("Input file name:")
     name, extension = os.path.splitext(file_name)
     print ("The file extension is {}". format(extension))
-    
-extension()
+extension("example_annot.gbf")
+
+
+ 
