@@ -12,9 +12,8 @@ if __name__ == '__main__':
 # print(name_parts)
 
 
-def extension ():
+def extension (file_name):
     import os.path
-    file_name = archivo
     name, extension = os.path.splitext(file_name)
     print ("The file extension is {}". format(extension))
     
