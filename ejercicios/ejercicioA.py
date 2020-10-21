@@ -14,8 +14,8 @@ if __name__ == '__main__':
 
 def extension ():
     import os.path
-    file_name = input("Input file name:")
+    file_name = archivo
     name, extension = os.path.splitext(file_name)
     print ("The file extension is {}". format(extension))
     
-extension()
+extension("example_annot.gbf")
