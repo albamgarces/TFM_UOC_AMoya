@@ -21,11 +21,11 @@ import sys
 # especialmente si lo queremos distribuir y hacer automatico
 
 def extension (file_given):
-    compt = {".gbf", ".gff", ".fna", ".faa"}
+    compt = {".gbf", ".gbk", ".gff", ".fna", ".faa"}
     file_name_abs_path = os.path.abspath(file_given) ## obtiene el path absolute al fichero. te ahorra problemas de path incompletos futuros
     name, extension = os.path.splitext(file_name_abs_path)
     if extension in compt:
-        if extension == ".gbf":
+        if extension == ".gbf" or extension == ".gbk":
             ##seq_rec = [rec for rec in SeqIO.parse("/home/alba/git/TFM_UOC_AMoya/data/example_denovo/example_annot.gbf", "genbank")]
             seq_rec = [rec for rec in SeqIO.parse(file_given, "genbank")]
             for rec in seq_rec:
@@ -34,6 +34,15 @@ def extension (file_given):
                     print ("locus_tag: ", feat.qualifiers["locus_tag"][0])
                     print("product: ", feat.qualifiers["product"])
                     print (feat.qualifiers["translation"])
+                    
+#         elif extension == ".gff":
+#             import BCBio
+#             from BCBio import GFF
+#             seq_rec= [for rec in GFF.parse(file_given)]
+#             for rec in seq_rec:
+#                 feats = [feat for feat in rec_]
+            
+                    
         else: 
             print ("The file extension is {}". format(extension))        
     else:
