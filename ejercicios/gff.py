@@ -42,8 +42,7 @@ def protein_recs(gff_file, ref_recs):
                 seq_exons = []
                 for cds in feature.sub_features:
                     seq_exons.append(rec.seq[
-                        cds.location.nofuzzy_start:
-                    cds.location.nofuzzy_end])
+                        cds.location.nofuzzy_start : cds.location.nofuzzy_end])
                     gene_seq = Seq.Seq(str(reduce(operator.add, seq_exons, "")))
                     if feature.strand == -1:
                         gene_seq = gene_seq.reverse_complement()
