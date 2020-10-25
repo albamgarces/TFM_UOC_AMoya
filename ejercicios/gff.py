@@ -40,7 +40,7 @@ def protein_recs(gff_file, ref_recs):
         for rec in gff_predct(in_handle, ref_recs):
             for feature in rec.features:
                 seq_exons = []
-                for cds in feature.sub.features:
+                for cds in feature.sub_features:
                     seq_exons.append(rec.seq[
                         cds.location.nofuzzy_start:
                     cds.location.nofuzzy_end])
