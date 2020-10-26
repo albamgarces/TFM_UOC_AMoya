@@ -41,10 +41,12 @@ def gff_parser (gff_file, ref_file):
     gff_name, gff_extension = os.path.splitext(gff_abs_path)
     fasta_abs_path = os.path.abspath(ref_file) 
     fasta_name, fasta_extension = os.path.splitext(fasta_abs_path)
-    if gff_extension == ".gff" and fasta_extension == ".faa":
-        seq_dict= SeqIO.to_dict(SeqIO.parse(ref_file, "fasta"))
-        for rec in GFF.parse(gff_file, base_dict=seq_dict):
-            print(rec)
+    if gff_extension == ".gff" and fasta_extension == ".fna":
+        with open(ref_file) as in_handle:
+            seq_dict= SeqIO.to_dict(SeqIO.parse(ref_file, "fasta"))
+
+        for rec in GFF.parse(gff_file):
+            print(rec.features)
     else: 
         print("The file extension is {}". format(gff_extension), "and {}". format(fasta_extension))
              
@@ -52,7 +54,7 @@ def main():
     if len(sys.argv)>2:
         print("")
     else:
-        print ("python %s annotation_file\n" %os.path.realpath(__file__))
+        print ("python %s annotation_file ref_fasta\n" %os.path.realpath(__file__))
         exit()
     gff_parser(sys.argv[1], sys.argv[2])
 
