@@ -44,6 +44,7 @@ def gff_parser (gff_file, ref_file):
     if gff_extension == ".gff" and fasta_extension == ".fna":
         with open(ref_file) as in_handle:
             seq_dict= SeqIO.to_dict(SeqIO.parse(ref_file, "fasta"))
+            
 
         for rec in GFF.parse(gff_file):
             print(rec.features)

@@ -1,6 +1,5 @@
 '''
 Created on 24 oct. 2020
-
 @author: alba
 '''
 from __future__ import with_statement #esto no se para qué es
@@ -44,7 +43,7 @@ def protein_recs(gff_file, ref_recs):
                     seq_exons.append(rec.seq[
                         cds.location.nofuzzy_start : cds.location.nofuzzy_end])
                     gene_seq = Seq.Seq(str(reduce(operator.add, seq_exons, "")))
-                    if feature.strand == -1:
+                    if feature.strand == "-":
                         gene_seq = gene_seq.reverse_complement()
                     protein_seq = gene_seq.translate()
                     yield SeqRecord(protein_seq, feature.qualifiers["ID"][0], "", "")
@@ -58,6 +57,4 @@ if __name__ == "__main__":
     if len(sys.argv) != 3:
         print (__doc__)
         sys.exit()
-    gff_parse(*sys.argv[1:])       
-
-    
+    gff_parse(*sys.argv[1:]) 
