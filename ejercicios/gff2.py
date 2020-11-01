@@ -4,8 +4,8 @@ Created on 28 oct. 2020
 @author: alba
 '''
 
-# gff_file = "/home/alba/git/TFM_UOC_AMoya/data/example_NCBI/example1_genomic.gff"
-# ref_file = "/home/alba/git/TFM_UOC_AMoya/data/example_NCBI/example1_genomic.fna"
+gff_file = "/home/alba/git/TFM_UOC_AMoya/data/example_NCBI/example1_genomic.gff"
+ref_file = "/home/alba/git/TFM_UOC_AMoya/data/example_NCBI/example1_genomic.fna"
 
 import sys
 import os
@@ -47,7 +47,7 @@ def main (gff_file, ref_file, debug=False):
 def protein_recs(gff_file, ref_recs, debug=False):
 
     with open(gff_file) as in_handle:
-	##parse the output. Generate SeqRecord and SeqFeatures for predictions
+        ##parse the output. Generate SeqRecord and SeqFeatures for predictions
         limit_info = dict(gff_type=["CDS"])    
         for rec in GFF.parse(in_handle, limit_info = limit_info, base_dict=ref_recs):
             ## JF
@@ -57,7 +57,7 @@ def protein_recs(gff_file, ref_recs, debug=False):
                 print ()
         
             for feature in rec.features:
-               ## JF
+                ## JF
                 if (debug):
                     print ("## DEBUG: feature")
                     print (feature)
@@ -75,9 +75,9 @@ def protein_recs(gff_file, ref_recs, debug=False):
                     #print (feature.qualifiers["Name"][0])
                     #print (feature.qualifiers["Parent"][0])
                     #print (feature.qualifiers["locus_tag"][0])
-
- 		## get gene sequence
-                gene_seq = Seq.Seq(str(rec.seq[feature.location.nofuzzy_start:feature.location.nofuzzy_end]))
+        
+        ## get gene sequence
+                gene_seq = Seq.Seq(str(rec.seq[feature.location.nofuzzy_start:feature.location.nofuzzy_end][:-3]))
 
                 ## JF
                 if (debug):
@@ -85,7 +85,7 @@ def protein_recs(gff_file, ref_recs, debug=False):
                     print (gene_seq)
 
                 if feature.strand == -1:
-                   gene_seq = gene_seq.reverse_complement()
+                    gene_seq = gene_seq.reverse_complement()
                 protein_seq = gene_seq.translate()
                 yield(SeqRecord(protein_seq, feature.qualifiers["ID"][0], "", ""))
 
@@ -93,14 +93,14 @@ def protein_recs(gff_file, ref_recs, debug=False):
 if __name__ == "__main__":
     if len(sys.argv) != 3:
         print (__doc__)
-
-	## JF: Tambien es util mostrar que se necesta
+        
+        ## JF: Tambien es util mostrar que se necesta
         print ("## Usage gff_parser")
         print ("python %s gff_file ref_fasta_file\n" %sys.argv[0])
 
         sys.exit()
 
-    ## prube las dos lineas de codigo y entiende la diferencia.
+    ## prueba las dos lineas de codigo y entiende la diferencia.
     main(*sys.argv[1:], debug=True)
     #main(*sys.argv[1:])
 
@@ -108,6 +108,5 @@ if __name__ == "__main__":
     # fijate donde se define main (linea 22)
     # Se utiliza el "=" para indicar el default.
         
-
         
         
