@@ -19,23 +19,23 @@ import pprint
 from BCBio.GFF import GFFExaminer
 
 ##feature attributes summary with count for the number of times appeared
-# examiner = GFFExaminer()
-# in_handle = open(in_file)
-# #pprint.pprint(examiner.parent_child_map(in_handle))
-# pprint.pprint(examiner.available_limits(in_handle))
-# in_handle.close()
-
-## subset features to parse
-limit_info = dict(gff_type=["CDS"])
- 
+examiner = GFFExaminer()
 in_handle = open(in_file)
-for rec in GFF.parse(in_handle, limit_info=limit_info):
-    print(rec.features) ##all records##
-    print(rec.features[0]) ##first record##
-#for rec in GFF.parse(in_handle, target_lines=1000): ##limit the lines read at once time
+#pprint.pprint(examiner.parent_child_map(in_handle))
+pprint.pprint(examiner.available_limits(in_handle))
 in_handle.close()
 
-from Bio import SeqIO
+## subset features to parse
+# limit_info = dict(gff_type=["CDS"])
+#  
+# in_handle = open(in_file)
+# for rec in GFF.parse(in_handle, limit_info=limit_info):
+#     print(rec.features) ##all records##
+#     print(rec.features[0]) ##first record##
+# #for rec in GFF.parse(in_handle, target_lines=1000): ##limit the lines read at once time
+# in_handle.close()
+# 
+# from Bio import SeqIO
 ##annotation + genomic sequence
 # in_seq_file ="/home/alba/git/TFM_UOC_AMoya/data/example_denovo/example_genomic.fna"
 # in_seq_handle = open(in_seq_file)
