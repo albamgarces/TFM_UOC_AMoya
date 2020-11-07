@@ -43,17 +43,22 @@ def gbf_parser(gbf_file, debug=False):
                     print ("## DEBUG: feature")
                     print (feature)
                     print ()
+                   
          
                 gene_seq = Seq.Seq(feature.qualifiers["translation"][0])
                 yield(SeqRecord(gene_seq, feature.qualifiers["locus_tag"][0],"",""))
-           
+ 
+def test():
+    print("ejemplo")
+               
 if __name__ == "__main__":
     if len(sys.argv) != 2:
         print (__doc__)
         
        
-        print ("## Usage gff_parser")
+        print ("## Usage protein_gff")
         print ("python %s gff_file ref_fasta_file\n" %sys.argv[0])
+        test()
 
         sys.exit()
 
