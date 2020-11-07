@@ -11,6 +11,8 @@ import protein_gbf
 
 protein_gbf.test()
 
+from argparse import ArgumentParser
+
 #extract extension
 
 def extension(file_given):
@@ -20,24 +22,31 @@ def extension(file_given):
     name_file, extension, path_file = os.path.splitext(file_name_abs_path)
     if extension in compt:
         if extension == ".gbf" or extension == ".gbk" or extension == ".gb":
-            protein_gbf(file_given) 
+            gbf_parser= protein_gbf.gbf_parser(file_given, debug)
+            protein_gbf.main(gbf_parser, debug)
+        
+             
         elif extension == ".gff":
             protein_gff(file_given, ref_file)
+            
+       
     else:
         print("File format not available")
         
-def print ():
-        
-# def protein_gbf (file_given):
-#     seq_rec = [rec for rec in SeqIO.parse(file_given, "genbank")]
-#     for rec in seq_rec:
-#         feats = [feat for feat in rec.features if feat.type == "CDS"]
-#         for feat in feats:
-#             print ("locus_tag: ", feat.qualifiers["locus_tag"][0])
-#             print("product: ", feat.qualifiers["product"])
-#             print(feat.qualifiers["translation"])
-#             
-# def protein_gff(file_given, ref_file):
-#     fasta_abs_path = os.path.abspath(ref_file)
-#     fasta_name, fasta_extension
+
     
+
+def parseArgument():
+    parser = ArgumentParser(description="Get proteins sequences from annotation file")
+    parser.add_argument("-a", "--annot_file", metavar="", help="gb, gff or gtf annotation file")
+    parser.add_argument("-r", "--ref_file", metavar="", help="Genome references FASTA file")
+    parser.add_argument("-p", "--prot_file", metavar="", help="Protein sequence file")
+    parser.add_argument("--debug", metavar="")
+    parser.add_argument("-o", "--out_folder", metavar="", help="Results folder")
+    return parser.parse_args()
+
+arg= parseArgument()
+if arg.annot_file == None:
+    print("Please provide an annotation file")
+
+        

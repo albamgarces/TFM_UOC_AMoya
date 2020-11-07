@@ -15,9 +15,9 @@ from argparse import ArgumentParser
 def parseArgument():
     parser = ArgumentParser(description="Get proteins sequences from annotation file")
     parser.add_argument("-a", "--annot_file", metavar="", help="gb, gff or gtf annotation file")
-    parser.add_argument("-r", "--ref_file", metavar="", help="Genome references file")
+    parser.add_argument("-r", "--ref_file", metavar="", help="Genome references FASTA file")
     parser.add_argument("-p", "--prot_file", metavar="", help="Protein sequence file")
-    parser.add_argument("--debug")
+    parser.add_argument("--debug", metavar="")
     parser.add_argument("-o", "--out_folder", metavar="", help="Results folder")
     return parser.parse_args()
 
