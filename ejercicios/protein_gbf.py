@@ -7,6 +7,10 @@ from Bio import SeqIO, Seq
 import os
 import sys
 from Bio.SeqRecord import SeqRecord
+import pandas as pd
+import numpy as np
+
+from Bio.SeqIO.FastaIO import SimpleFastaParser
 
 
 def main (gbf_file, debug=False):
@@ -28,7 +32,7 @@ def main (gbf_file, debug=False):
         print ()
         
     with open(out_file, "w") as output_handle:
-        SeqIO.write(gbf_parser(gbf_file, debug=debug), output_handle, "fasta")
+        gbf_fasta=SeqIO.write(gbf_parser(gbf_file, debug=debug), output_handle, "fasta")
 
 def gbf_parser(gbf_file, debug=False):
     for rec in SeqIO.parse(gbf_file, "genbank"):
@@ -50,6 +54,22 @@ def gbf_parser(gbf_file, debug=False):
  
 def test():
     print("ejemplo")
+    
+def gbf_frame (gbf_fasta):
+    with open(gbf_fasta) as fasta_file:
+        identifiers = []
+        seq = []
+        for title, sequence in SimpleFastaParser(fasta_file):
+                        identifiers.append(title)
+                        seq.append(sequence)
+                        s1 = pd.Series(identifiers, name="ID")
+                        s2 = pd.Series(seq, name="sequence")
+                        gbf_df = pd.DataFrame(dict(ID=s1, sequence=s2)).set_index(["ID"])
+                        gbf_df.reset_index().to_csv("out_gbf.csv", header=True, index=False)
+    
+                                                 
+    
+
                
 if __name__ == "__main__":
     if len(sys.argv) != 2:
