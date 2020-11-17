@@ -56,11 +56,44 @@ out_file = "/home/alba/git/TFM_UOC_AMoya/data/example_denovo/example_annot-prote
 #                         s2 = pd.Series(seq, name="sequence")
 #                         gbf_df = pd.DataFrame(dict(ID=s1, sequence=s2)).set_index(["ID"])
 #                         gbf_df.reset_index().to_csv("out_gbf.csv", header=True, index=False)
-#                                   
-                        
+#        
+                           
+gbf_file = "/home/alba/git/TFM_UOC_AMoya/data/example_denovo/example_annot.gbf"                  
 subset_file = "/home/alba/git/TFM_UOC_AMoya/data/example_denovo/subset.gbf"
 
-annot_df = pd.DataFrame()
+# annot_df = pd.DataFrame()
+# 
+# for rec in SeqIO.parse(gbf_file, "genbank"):
+#     print("*************")
+#     print(rec)
+#     for feature in rec.features:
+#         print()
+#         print("#FEATURE:")
+#         print(feature)
+#         print()
+#         if feature.type=="CDS":
+#             if int(feature.strand) > 0:
+#                 strand = "pos"
+#             else:
+#                 strand = "neg"
+#                 
+#             protID = rec.id + "_" + str(feature.location.nofuzzy_start) + "_" + str(feature.location.nofuzzy_end) + "_" + strand
+#             print(protID)
+#             annot_df.loc[protID, "strand"] = strand
+#             
+#             print(feature.qualifiers)
+#             
+#             if not "gene" in feature.qualifiers:
+#                 pass
+#             else:
+#                 annot_df.loc[protID,["gene"]]=feature.qualifiers["gene"]
+
+
+columns = ['locus_tag', 'gene', 'product', 'EC_number',
+           'db_xref', 'start', 'end', 'strand', 'translation']
+annot_df = pd.DataFrame(data=None, columns=columns)
+print(annot_df)
+
 
 for rec in SeqIO.parse(gbf_file, "genbank"):
     print("*************")
@@ -78,15 +111,18 @@ for rec in SeqIO.parse(gbf_file, "genbank"):
                 
             protID = rec.id + "_" + str(feature.location.nofuzzy_start) + "_" + str(feature.location.nofuzzy_end) + "_" + strand
             print(protID)
-            annot_df.loc[protID, "strand"] = strand
-            
-            print(feature.qualifiers)
-            
-            if not "gene" in feature.qualifiers:
-                pass
-            else:
-                annot_df.loc[protID,["gene"]]=feature.qualifiers["gene"]
-            
+            annot_df.loc[protID, ["start", "end", "strand"]] = [feature.location.nofuzzy_start, feature.location.nofuzzy_end, strand]
+            qualif = feature.qualifiers
+            print("#Qualifiers:")
+            print(qualif)
+            print()
+            for keys, values in qualif.items():
+                print(keys)
+                print(values)
+                if keys in columns:
+                    annot_df.loc[protID,[keys]] = [values[0]]
+#             
+                    
 print(annot_df)
 annot_df.to_csv("out_subset.csv", header=True)
 
@@ -118,7 +154,39 @@ annot_df.to_csv("out_subset.csv", header=True)
 # df = pd.DataFrame(data, columns=columns).set_index(["locus_tag"])
 # print(df)
 
+columns = ['locus_tag', 'gene', 'product', 'EC_number',
+           'db_xref', 'start', 'end', 'strand', 'translation']
+annot_df = pd.DataFrame(data=None, columns=columns)
 
+
+
+for rec in SeqIO.parse(gbf_file, "genbank"):
+    print("*************")
+    print(rec)
+    for feature in rec.features:
+        print()
+        print("#FEATURE:")
+        print(feature)
+        print()
+        if feature.type=="CDS":
+            if int(feature.strand) > 0:
+                strand = "pos"
+            else:
+                strand = "neg"
+                
+            protID = rec.id + "_" + str(feature.location.nofuzzy_start) + "_" + str(feature.location.nofuzzy_end) + "_" + strand
+            print(protID)
+            annot_df.loc[protID, ["start", "end", "strand"]] = [feature.location.nofuzzy_start, feature.location.nofuzzy_end, strand]
+            qualif = feature.qualifiers
+            print("#Qualifiers:")
+            print(qualif)
+            print()
+            for keys, values in qualif.items():
+                annot_df.loc[protID,[keys]] = [values[0]]
+#             
+                    
+print(annot_df)
+annot_df.to_csv("out_subset.csv", header=True)
 
 
 
