@@ -17,7 +17,10 @@ from Bio import SeqIO, Seq
 from Bio.SeqRecord import SeqRecord
 import BCBio
 from BCBio import GFF
-## from basic_GFF_parsing import in_handle ### JF:  Esto para que? Estas importando un script pero no hace nada
+
+import pandas as pd
+import numpy as np
+
 
 def main (gff_file, ref_file, debug=False):
     with open (ref_file) as in_handle:
@@ -30,7 +33,7 @@ def main (gff_file, ref_file, debug=False):
         print ()
 
     base, ext = os.path.splitext(gff_file)
-    out_file = "%s-proteins.fa" % base
+    out_file = "%s-gff_proteins.fa" % base
 
     ## JF
     if (debug):
@@ -45,10 +48,14 @@ def main (gff_file, ref_file, debug=False):
 
 #generate protein records from gff_predct        
 def protein_recs(gff_file, ref_recs, debug=False):
-
+    
+    columns = ['locus_tag', 'gene', 'product', 'Dbxref', 
+               'start', 'end', 'strand', 'translation']
+    annot_df = pd.DataFrame(data=None, columns=columns)
+    
     with open(gff_file) as in_handle:
         ##parse the output. Generate SeqRecord and SeqFeatures for predictions
-        limit_info = dict(gff_type=["CDS"])    
+        limit_info = dict(gff_type=["CDS", "pseudogene"])    
         for rec in GFF.parse(in_handle, limit_info = limit_info, base_dict=ref_recs):
             ## JF
             if (debug):
@@ -58,37 +65,60 @@ def protein_recs(gff_file, ref_recs, debug=False):
         
             for feature in rec.features:
                 ## JF
-                if (debug):
-                    print ("## DEBUG: feature")
-                    print (feature)
-                    print ()
-
-                    ## check feature qualifiers: some might not be always present: pseudo, gene, Name
-                    print (feature.location)
-                    print (feature.location.nofuzzy_start)
-                    print (feature.location.nofuzzy_end)
-                    print (feature.strand)
-                    print (feature.id)
-                    print (feature.qualifiers)
+                #if (debug):
+                    #print ("## DEBUG: feature")
+#                     print (feature)
+                    #print ()
+# 
+#                     ## check feature qualifiers: some might not be always present: pseudo, gene, Name
+#                     print (feature.location)
+#                     print (feature.location.nofuzzy_start)
+#                     print (feature.location.nofuzzy_end)
+#                     print (feature.strand)
+#                     print (feature.id)
+#                     print (feature.qualifiers)
+#                     print(feature.type)
 
                     #print (feature.qualifiers["gene"][0])
                     #print (feature.qualifiers["Name"][0])
                     #print (feature.qualifiers["Parent"][0])
                     #print (feature.qualifiers["locus_tag"][0])
-        
-        ## get gene sequence
+                
+                if feature.strand == -1:
+                    strand = "neg"
+                else:   
+                    strand = "pos"
+                
+                protID = feature.type + "_" + rec.id + "_" + str(feature.location.nofuzzy_start) + "_" + str(feature.location.nofuzzy_end) + "_" + strand
+                annot_df.loc[protID, ["type", "start", "end", "strand"]] = [feature.type, feature.location.nofuzzy_start, feature.location.nofuzzy_end, strand]
+                qualif = feature.qualifiers
+                for keys, values in qualif.items():
+                    annot_df.loc[protID,[keys]] = [values[0]]
+                
+                ## get gene sequence
                 gene_seq = Seq.Seq(str(rec.seq[feature.location.nofuzzy_start:feature.location.nofuzzy_end][:-3]))
 
                 ## JF
-                if (debug):
-                    print ("## DEBUG: gene_seq")
-                    print (gene_seq)
+                #if (debug):
+                    #print ("## DEBUG: gene_seq")
+#                     print (gene_seq)
+                    #print()
 
-                if feature.strand == -1:
-                    gene_seq = gene_seq.reverse_complement()
-                protein_seq = gene_seq.translate()
-                yield(SeqRecord(protein_seq, feature.qualifiers["ID"][0], "", ""))
+                if feature.type == "CDS":
+                    if feature.strand == -1:
+                        gene_seq = gene_seq.reverse_complement()
+                    protein_seq = gene_seq.translate()
+                    annot_df.loc[protID,["translation"]] = [protein_seq]
+                    yield(SeqRecord(protein_seq, feature.qualifiers["ID"][0], "", ""))
 
+    base, ext = os.path.splitext(gff_file)
+    csv_file = "%s-gff_df.csv" % base            
+    annot_df.to_csv(csv_file, header=True)
+    
+    if (debug):
+        print("##DEBUG: Dataframe")
+        print(annot_df)
+        print()
         
 if __name__ == "__main__":
     if len(sys.argv) != 3:
