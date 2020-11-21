@@ -38,8 +38,12 @@ def main (gbf_file, debug=False):
 
 
 def gbf_parser(gbf_file, debug=False):
-    columns = ['locus_tag', 'type', 'gene', 'product', 'EC_number',
-           'db_xref', 'start', 'end', 'strand']
+    
+    #create an empty dataframe. The most important info as first columns
+    #all the other file info will be filled next
+    columns = ['locus_tag', 'protein_id', 'gene', 'start',
+               'end', 'strand', 'pseudo', 'product', 'db_xref',
+               'EC_number', 'old_locus_tag', 'inference']
     annot_df = pd.DataFrame(data=None, columns=columns)
     
     for rec in SeqIO.parse(gbf_file, "genbank"):
@@ -49,83 +53,76 @@ def gbf_parser(gbf_file, debug=False):
             print()
             
         for feature in rec.features:
-            #we create a dataframe with all items
-            if int(feature.strand) > 0:
-                strand = "pos"
-            else:
-                strand = "neg"
-                
-            protID = feature.type + "_" + rec.id + "_" + str(feature.location.nofuzzy_start) + "_" + str(feature.location.nofuzzy_end) + "_" + strand
-#             if (debug):
-#                 print("#DEBUG: protID")
-#                 print(protID)
-#                 print()
-                        
-            annot_df.loc[protID, ["type", "start", "end", "strand"]] = [feature.type, feature.location.nofuzzy_start, feature.location.nofuzzy_end, strand]
-            qualif = feature.qualifiers
-#             if (debug):
-#                 print("#DEBUG: Qualifiers")
-#                 print(qualif)
-#                 print()
-            for keys, values in qualif.items():
-                annot_df.loc[protID,[keys]] = [values[0]]
             
-            #we create a FASTA file with protein sequences
+            #sort by CDS type. Duplicate genes analysis needs coding regions to proteins.
             if feature.type=="CDS":
+                if int(feature.strand) > 0:
+                    strand = "pos"
+                else:
+                    strand = "neg"
+            
+                #we create an ID for each entry     
+                protID = feature.type + "_" + rec.id + "_" + str(feature.location.nofuzzy_start) + "_" + str(feature.location.nofuzzy_end) + "_" + strand
 #                 if (debug):
-#                     print ("## DEBUG: feature")
-#                     print (feature)
-#                     print ()
+#                     print("#DEBUG: protID")
+#                     print(protID)
+#                     print()
+                        
+                annot_df.loc[protID, ["start", "end", "strand"]] = [feature.location.nofuzzy_start, feature.location.nofuzzy_end, strand]
+                qualif = feature.qualifiers
+#                 if (debug):
+#                     print("#DEBUG: Qualifiers")
+#                     print(qualif)
+#                     print()
+                for keys, values in qualif.items():
+                 
+                        #fill the dataframe info
+                    if keys not in columns:
+                        continue
+                    annot_df.loc[protID,[keys]] = [values[0]]
                     
-#                     print (feature.location)
-#                     print (feature.location.nofuzzy_start)
-#                     print (feature.location.nofuzzy_end)
-#                     print (feature.strand)
-#                     print (feature.id)
-#                     print (feature.qualifiers)   
+                    if keys=="pseudo":
+                        pseudo = "True"
+                        annot_df.loc[protID,["pseudo"]] = [pseudo]
+            
+                        #we create a FASTA file with protein sequences
+            
+#                     if (debug):
+#                         print ("## DEBUG: feature")
+#                         print (feature)
+#                         print ()
+                    
+#                         print (feature.location)
+#                         print (feature.location.nofuzzy_start)
+#                         print (feature.location.nofuzzy_end)
+#                         print (feature.strand)
+#                         print (feature.id)
+#                         print (feature.qualifiers)   
                    
-                if keys=="translation":
+                if feature.qualifiers=="translation":
                     #pseudogenes have no translation item
                     gene_seq = Seq.Seq(feature.qualifiers["translation"][0])
                 else:
                     pass
                 yield(SeqRecord(gene_seq, feature.qualifiers["locus_tag"][0],"",""))
+        
     
     base, ext = os.path.splitext(gbf_file)
-    csv_file = "%s-df_gbf.csv" % base            
+    csv_file = "%s-gbf_df.csv" % base            
     annot_df.to_csv(csv_file, header=True)
     
     if (debug):
         print("## DEBUG: dataframe")
         print(annot_df)
-    
- 
-def test():
-    print("ejemplo")
-#     
-# def gbf_frame (gbf_fasta):
-#     with open(gbf_fasta) as fasta_file:
-#         identifiers = []
-#         seq = []
-#         for title, sequence in SimpleFastaParser(fasta_file):
-#                         identifiers.append(title)
-#                         seq.append(sequence)
-#                         s1 = pd.Series(identifiers, name="ID")
-#                         s2 = pd.Series(seq, name="sequence")
-#                         gbf_df = pd.DataFrame(dict(ID=s1, sequence=s2)).set_index(["ID"])
-#                         gbf_df.reset_index().to_csv("out_gbf.csv", header=True, index=False)
-    
-                                                 
-    
-
+               
                
 if __name__ == "__main__":
     if len(sys.argv) != 2:
         print (__doc__)
         
        
-        print ("## Usage protein_gff")
-        print ("python %s gff_file ref_fasta_file\n" %sys.argv[0])
+        print ("## Usage protein_gbf")
+        print ("python %s gbf_file\n" %sys.argv[0])
         test()
 
         sys.exit()

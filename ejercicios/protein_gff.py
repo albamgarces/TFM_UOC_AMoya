@@ -49,13 +49,14 @@ def main (gff_file, ref_file, debug=False):
 #generate protein records from gff_predct        
 def protein_recs(gff_file, ref_recs, debug=False):
     
-    columns = ['locus_tag', 'gene', 'product', 'Dbxref', 
-               'start', 'end', 'strand', 'translation']
+    columns = ['locus_tag', 'protein_id', 'gene',  'start',
+               'end', 'strand', 'pseudo', 'product', 'Dbxref', 'inference']
     annot_df = pd.DataFrame(data=None, columns=columns)
     
     with open(gff_file) as in_handle:
         ##parse the output. Generate SeqRecord and SeqFeatures for predictions
-        limit_info = dict(gff_type=["CDS", "pseudogene"])    
+        ##sort by CDS type. Duplicate genes analysis just needs coding regions to proteins.
+        limit_info = dict(gff_type=["CDS"])    
         for rec in GFF.parse(in_handle, limit_info = limit_info, base_dict=ref_recs):
             ## JF
             if (debug):
@@ -92,23 +93,30 @@ def protein_recs(gff_file, ref_recs, debug=False):
                 protID = feature.type + "_" + rec.id + "_" + str(feature.location.nofuzzy_start) + "_" + str(feature.location.nofuzzy_end) + "_" + strand
                 annot_df.loc[protID, ["type", "start", "end", "strand"]] = [feature.type, feature.location.nofuzzy_start, feature.location.nofuzzy_end, strand]
                 qualif = feature.qualifiers
+                
                 for keys, values in qualif.items():
+                    if keys == "Note":
+                        continue
                     annot_df.loc[protID,[keys]] = [values[0]]
+                    
                 
                 ## get gene sequence
-                gene_seq = Seq.Seq(str(rec.seq[feature.location.nofuzzy_start:feature.location.nofuzzy_end][:-3]))
+                gene_seq = Seq.Seq(str(rec.seq[feature.location.nofuzzy_start:feature.location.nofuzzy_end]))
 
                 ## JF
                 #if (debug):
                     #print ("## DEBUG: gene_seq")
 #                     print (gene_seq)
                     #print()
-
+                        
+                
                 if feature.type == "CDS":
                     if feature.strand == -1:
                         gene_seq = gene_seq.reverse_complement()
-                    protein_seq = gene_seq.translate()
-                    annot_df.loc[protID,["translation"]] = [protein_seq]
+                    
+                    #delete STOP simbols
+                    protein_seq = gene_seq.translate(to_stop=True)
+                    
                     yield(SeqRecord(protein_seq, feature.qualifiers["ID"][0], "", ""))
 
     base, ext = os.path.splitext(gff_file)
