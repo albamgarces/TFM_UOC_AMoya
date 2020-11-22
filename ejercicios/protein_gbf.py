@@ -99,7 +99,7 @@ def gbf_parser(gbf_file, debug=False):
 #                         print (feature.id)
 #                         print (feature.qualifiers)   
                    
-                if feature.qualifiers=="translation":
+                if keys=="translation":
                     #pseudogenes have no translation item
                     gene_seq = Seq.Seq(feature.qualifiers["translation"][0])
                 else:
@@ -123,7 +123,7 @@ if __name__ == "__main__":
        
         print ("## Usage protein_gbf")
         print ("python %s gbf_file\n" %sys.argv[0])
-        test()
+       
 
         sys.exit()
 

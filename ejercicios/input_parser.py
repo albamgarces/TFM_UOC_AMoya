@@ -18,16 +18,28 @@ from argparse import ArgumentParser
 def extension(file_given):
     compt = {}
     compt["fasta"] = [".fa", ".mpfa", ".fna", ".fsa", ".fas", ".fasta"]
-    compt["genbank"] = [".genbank", ".gb", ".gbf", ".gbk"]
+    compt["genbank"] = [".genbank", ".gb", ".gbf", ".gbff", ".gbk"]
     
     print(compt)
+    print(compt["fasta"])
     #get file absolute path
     file_name_abs_path = os.path.abspath(file_given)
     #name_file, extension, path_file = os.path.splitext(file_name_abs_path)
     name_file, extension = os.path.splitext(file_name_abs_path)
     print(os.path.splitext(file_name_abs_path))
+    
     if extension in compt["genbank"]:
         gbf_parser = protein_gbf.gbf_parser(file_given)
+        
+        for fasta in gbf_parser:
+            protein_gbf.main(file_given)
+            
+        
+    else:
+        print("")
+        print("Sorry, doesn't work, try again!")
+        print("")
+        
         
         
 #         
