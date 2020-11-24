@@ -1,5 +1,0 @@
-,locus_tag,protein_id,gene,start,end,strand,pseudo,product,db_xref,EC_number,old_locus_tag,inference
-CDS_NC_017032.1_8932_9652_pos,KCKEPNKI_00011,,srtA,8932,9652,pos,,Sortase A,,3.4.22.-,,ab initio prediction:Prodigal:002006
-CDS_NC_017032.1_37291_39499_pos,KCKEPNKI_00039,,topB,37291,39499,pos,,DNA topoisomerase 3,COG:COG0550,5.6.2.1,,ab initio prediction:Prodigal:002006
-CDS_NC_017032.1_41255_41741_pos,KCKEPNKI_00043,,ssb,41255,41741,pos,,Single-stranded DNA-binding protein,COG:COG0629,,,ab initio prediction:Prodigal:002006
-CDS_NC_017032.1_49713_50319_neg,KCKEPNKI_00054,,bin3,49713,50319,neg,,Putative transposon Tn552 DNA-invertase bin3,,,,ab initio prediction:Prodigal:002006

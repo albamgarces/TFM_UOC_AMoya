@@ -3,7 +3,7 @@ Created on 28 oct. 2020
 
 @author: alba
 '''
-
+####ojo con los inferred_parents###############
 # gff_file = "/home/alba/git/TFM_UOC_AMoya/data/example_NCBI/example1_genomic.gff"
 # ref_file = "/home/alba/git/TFM_UOC_AMoya/data/example_NCBI/example1_genomic.fna"
 
