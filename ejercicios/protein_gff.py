@@ -21,6 +21,8 @@ from BCBio import GFF
 import pandas as pd
 import numpy as np
 
+import output
+
 
 def main (gff_file, ref_file, debug=False):
     with open (ref_file) as in_handle:
@@ -33,7 +35,9 @@ def main (gff_file, ref_file, debug=False):
         print ()
 
     base, ext = os.path.splitext(gff_file)
-    out_file = "%s-gff_proteins.fa" % base
+    output_path = "%s_output" % base
+    output.create_folder(output_path)
+    out_file = "%s/gff_proteins.fa" % output_path
 
     ## JF
     if (debug):
@@ -46,9 +50,11 @@ def main (gff_file, ref_file, debug=False):
     with open(out_file, "w") as out_handle:
         SeqIO.write(protein_recs(gff_file, ref_recs, debug=debug), out_handle, "fasta")
 
+    
+     
+    
 #generate protein records from gff_predct        
 def protein_recs(gff_file, ref_recs, debug=False):
-    
     columns = ['locus_tag', 'protein_id', 'gene',  'start',
                'end', 'strand', 'pseudo', 'product', 'Dbxref', 'inference']
     annot_df = pd.DataFrame(data=None, columns=columns)
@@ -120,7 +126,8 @@ def protein_recs(gff_file, ref_recs, debug=False):
                     yield(SeqRecord(protein_seq, feature.qualifiers["ID"][0], "", ""))
 
     base, ext = os.path.splitext(gff_file)
-    csv_file = "%s-gff_df.csv" % base            
+    output_path = "%s_output" % base
+    csv_file = "%s/gff_df.csv" % output_path            
     annot_df.to_csv(csv_file, header=True)
     
     if (debug):

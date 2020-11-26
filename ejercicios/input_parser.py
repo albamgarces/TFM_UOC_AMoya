@@ -33,13 +33,16 @@ def result_folder (arg_dict):
         name_file, extension = os.path.splitext(file_name_abs_path)
         output_path = "%s_output" % name_file
         output.create_folder(output_path)
+          
     else:
-        file_name_abs_path = os.path.abspath(arg_dict["out_folder"]) 
+        output_path= os.path.abspath(arg_dict["out_folder"]) 
         output.create_folder(file_name_abs_path)
         
-        
+       
+         
         
 def extension(arg_dict):
+        
     compt = {}
     compt["fasta"] = [".fa", ".mpfa", ".fna", ".fsa", ".fas", ".fasta"]
     compt["genbank"] = [".genbank", ".gb", ".gbf", ".gbff", ".gbk"]
@@ -50,7 +53,7 @@ def extension(arg_dict):
         print(compt)
      
     #get  annot file absolute path
-     
+    
     file_name_abs_path = os.path.abspath(arg_dict["annot_file"])
     name_file, extension = os.path.splitext(file_name_abs_path)
     
@@ -66,7 +69,7 @@ def extension(arg_dict):
             print("Sorry, we don't need a ref file to parse a genbank file'")
             print("######")
         else:
-            gbf_parser = protein_gbf.gbf_parser(arg_dict["annot_file"])
+            protein_gbf.gbf_parser(arg_dict["annot_file"])
             protein_gbf.main(arg_dict["annot_file"])
     
     elif extension in compt["GFF"]:
@@ -83,8 +86,9 @@ def extension(arg_dict):
                 print(os.path.splitext(ref_name_abs_path))
             
             if ref_extension in compt["fasta"]:
-                    gff_parser = protein_gff.protein_recs(arg_dict["annot_file"], arg_dict["ref_file"])
+                    protein_gff.protein_recs(arg_dict["annot_file"], arg_dict["ref_file"])
                     protein_gff.main(arg_dict["annot_file"], arg_dict["ref_file"])
+                    
             else:
                 print("######")
                 print("Compatible ref_file formats: ")
@@ -146,5 +150,5 @@ if arg.debug:
 ## Cuando no se importe como un modulo este script, se ejecutara esto
 if __name__ == '__main__':
     extension(arg_dict)
-    result_folder(arg_dict)
+    #result_folder(arg_dict)
          

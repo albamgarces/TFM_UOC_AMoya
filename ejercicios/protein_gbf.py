@@ -12,6 +12,7 @@ import numpy as np
 
 from Bio.SeqIO.FastaIO import SimpleFastaParser
 
+import output
 
 def main (gbf_file, debug=False):
     with open(gbf_file, "r") as input_handle:
@@ -22,7 +23,9 @@ def main (gbf_file, debug=False):
 #         print ()
         
     base, ext = os.path.splitext(gbf_file)
-    out_file = "%s-gbf_proteins.fa" % base
+    output_path = "%s_output" % base
+    output.create_folder(output_path)
+    out_file = "%s/gbf_proteins.fa" % output_path
 
     if (debug):
         print ("## DEBUG:")
