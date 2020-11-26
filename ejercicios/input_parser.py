@@ -9,6 +9,7 @@ from Bio import SeqIO
 import sys
 import protein_gbf
 import protein_gff
+import output
 
 #protein_gbf.test()
 import argparse
@@ -26,7 +27,19 @@ from argparse import ArgumentParser
     # ToDO: create gtf parser
 #############
 
-def extension(args_dict):
+def result_folder (arg_dict):
+    if arg_dict["out_folder"] is None:
+        file_name_abs_path = os.path.abspath(arg_dict["annot_file"])
+        name_file, extension = os.path.splitext(file_name_abs_path)
+        output_path = "%s_output" % name_file
+        output.create_folder(output_path)
+    else:
+        file_name_abs_path = os.path.abspath(arg_dict["out_folder"]) 
+        output.create_folder(file_name_abs_path)
+        
+        
+        
+def extension(arg_dict):
     compt = {}
     compt["fasta"] = [".fa", ".mpfa", ".fna", ".fsa", ".fas", ".fasta"]
     compt["genbank"] = [".genbank", ".gb", ".gbf", ".gbff", ".gbk"]
@@ -54,8 +67,7 @@ def extension(args_dict):
             print("######")
         else:
             gbf_parser = protein_gbf.gbf_parser(arg_dict["annot_file"])
-            for fasta in gbf_parser:
-                protein_gbf.main(arg_dict["annot_file"])
+            protein_gbf.main(arg_dict["annot_file"])
     
     elif extension in compt["GFF"]:
         if arg_dict["ref_file"]==None:
@@ -134,4 +146,5 @@ if arg.debug:
 ## Cuando no se importe como un modulo este script, se ejecutara esto
 if __name__ == '__main__':
     extension(arg_dict)
+    result_folder(arg_dict)
          
