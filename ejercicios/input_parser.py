@@ -36,15 +36,15 @@ def result_folder (arg_dict):
           
     else:
         output_path= os.path.abspath(arg_dict["out_folder"]) 
-        output.create_folder(file_name_abs_path)
+        output.create_folder(output_path)
         
-       
+     #quiero: poder dar una carpeta y que se guarde ahí  
          
         
 def extension(arg_dict):
         
     compt = {}
-    compt["fasta"] = [".fa", ".mpfa", ".fna", ".fsa", ".fas", ".fasta"]
+    compt["fasta"] = [".fa", ".faa", ".mpfa", ".fna", ".fsa", ".fas", ".fasta"]
     compt["genbank"] = [".genbank", ".gb", ".gbf", ".gbff", ".gbk"]
     compt["GFF"] = {".gff"}
     
@@ -62,13 +62,14 @@ def extension(arg_dict):
         print(os.path.splitext(file_name_abs_path))
          
     #get protein fasta file and annotation csv file
- 
+    
     if extension in compt["genbank"]:
         if not arg_dict["ref_file"] is None:
             print("######")
             print("Sorry, we don't need a ref file to parse a genbank file'")
             print("######")
         else:
+            
             protein_gbf.gbf_parser(arg_dict["annot_file"])
             protein_gbf.main(arg_dict["annot_file"])
     
@@ -86,8 +87,8 @@ def extension(arg_dict):
                 print(os.path.splitext(ref_name_abs_path))
             
             if ref_extension in compt["fasta"]:
-                    protein_gff.protein_recs(arg_dict["annot_file"], arg_dict["ref_file"])
-                    protein_gff.main(arg_dict["annot_file"], arg_dict["ref_file"])
+                protein_gff.protein_recs(arg_dict["annot_file"], arg_dict["ref_file"])
+                protein_gff.main(arg_dict["annot_file"], arg_dict["ref_file"])
                     
             else:
                 print("######")

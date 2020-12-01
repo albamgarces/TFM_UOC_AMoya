@@ -111,7 +111,8 @@ def gbf_parser(gbf_file, debug=False):
         
     
     base, ext = os.path.splitext(gbf_file)
-    csv_file = "%s-gbf_df.csv" % base            
+    output_path = "%s_output" % base
+    csv_file = "%s/df.csv" % output_path            
     annot_df.to_csv(csv_file, header=True)
     
     if (debug):
