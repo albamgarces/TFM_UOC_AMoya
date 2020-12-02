@@ -15,12 +15,30 @@ from Bio.Blast.Applications import NcbiblastpCommandline
 
 #######
 #
+compt = {}
+compt["fasta"] = [".fa", ".faa", ".mpfa", ".fna", ".fsa", ".fas", ".fasta"]
+
 #blastp -query fasta_file -db name -outfmt '6 std qlen slen' -num_threads X -out name_out
-# def protein_blast(arg_dict):
-#     #create a commandline fotr the NCBI BLAST+ program blastp
-#     cline = NcbiblastpCommandline(query=arg_dict["fasta_file"], db=os.path.isfile(arg_dict["db_name"] + '.phr'), )
-#     
-#     
+def makeblast_results(arg_dict):
+    #create a commandline fotr the NCBI BLAST+ program blastp
+    #cline = NcbiblastpCommandline(query=arg_dict["fasta_file"], db=(arg_dict["db_name"] + '.phr'), )
+    file_name_abs_path = os.path.abspath(arg_dict["fasta_file"])
+    base, extension = os.path.splitext(file_name_abs_path)
+    if extension in compt["fasta"]:
+        output_path = "%s_blastp_results.txt" % base
+        db_path = "%s.phr" % arg_dict["db_name"]
+    
+        cmd_makeblast_results = "blastp -query %s -db  %s -outfmt %s -numthreads 1 -out %s" %(arg_dict["fasta_file"], db_path, '6 std qlen slen', output_path)
+        code = system_call(cmd_makeblast_results)
+        if (code == 'FAIL'):
+                print ('****ERROR: Some error happened during the blastp command')
+                print (cmd_makeblast_results)
+                exit()  
+    else:
+            print("#####")
+            print("Please provide a FASTA file")
+            print(compt)
+            print("#####")
 
 #https://github.com/HCGB-IGTP/HCGB_python_functions/blob/ce1762b709e3b9094c0630f63bfb9d33544ed4c3/HCGB/functions/blast_functions.py
 def makeblastdb(arg_dict):
@@ -29,8 +47,7 @@ def makeblastdb(arg_dict):
     if (os.path.isfile(arg_dict["db_name"] + '.phr')):
         print ("+ BLAST database is already generated...")
     else:
-        compt = {}
-        compt["fasta"] = [".fa", ".faa", ".mpfa", ".fna", ".fsa", ".fas", ".fasta"]
+        
         if arg.debug:
             print("## DEBUG: Format input file ")
             print(compt)
@@ -42,15 +59,22 @@ def makeblastdb(arg_dict):
             print(os.path.splitext(file_name_abs_path))
             
         if extension in compt["fasta"]:
-            cmd_makeblast = "%s -in %s -input_type fasta -dbtype %s -out %s" %(arg_dict["executable"], arg_dict["fasta_file"], 'prot', arg_dict["db_name"])
-            code = system_call(cmd_makeblast)
+            cmd_makeblastdb = "%s -in %s -input_type fasta -dbtype %s -out %s" %(arg_dict["executable"], arg_dict["fasta_file"], 'prot', arg_dict["db_name"])
+            code = system_call(cmd_makeblastdb)
             ##
             ## -> ¿distinguir que sea un fasta con aminoácidos y no nucleótidos?
             ##
-        if (code == 'FAIL'):
-            print ('****ERROR: Some error happened during the makeblastDB command')
-            print (cmd_makeblast)
-            exit()
+            if (code == 'FAIL'):
+                print ('****ERROR: Some error happened during the makeblastDB command')
+                print (cmd_makeblastdb)
+                exit()
+        else:
+            print("#####")
+            print("Please provide a FASTA file")
+            print(compt)
+            print("#####")
+            
+        
 
 #https://github.com/HCGB-IGTP/HCGB_python_functions/blob/2b3b1132fb885c8cb22f4d10fd4c00c25fa10fb8/HCGB/functions/system_call_functions.py
 def system_call(cmd, returned=False, message=True):
@@ -89,7 +113,7 @@ parser = ArgumentParser(prog='makeblastDB',
                         description="Create a BLAST database")
 parser.add_argument("-d", "--db_name", metavar="", help="New database name")
 parser.add_argument("-f", "--fasta_file", metavar="", help="Proteins sequences FASTA file")
-parser.add_argument("-e", "--executable", metavar="", help="BLAST executable")
+parser.add_argument("-e", "--executable", metavar="", help="BLAST executable: makeblastdb,...")
 # parser.add_argument("-o", "--out_folder", metavar= "", help="Results folder")
 parser.add_argument("--debug", action="store_true", default=False)   
 
@@ -119,6 +143,7 @@ if arg.debug:
     print(arg)
   
 if __name__ == "__main__":
-    makeblastdb(arg_dict)  
+    makeblastdb(arg_dict)
+    makeblast_results(arg_dict)  
   
     
