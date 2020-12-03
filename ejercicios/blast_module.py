@@ -28,7 +28,7 @@ def makeblast_results(arg_dict):
         output_path = "%s_blastp_results.txt" % base
         db_path = "%s.phr" % arg_dict["db_name"]
     
-        cmd_makeblast_results = "blastp -query %s -db  %s -outfmt %s -numthreads 1 -out %s" %(arg_dict["fasta_file"], db_path, '6 std qlen slen', output_path)
+        cmd_makeblast_results = "blastp -query %s -db  %s -outfmt \'6 std qlen slen|' -num_threads 1 -out %s" %(arg_dict["fasta_file"], arg_dict["db_name"], output_path)
         code = system_call(cmd_makeblast_results)
         if (code == 'FAIL'):
                 print ('****ERROR: Some error happened during the blastp command')
