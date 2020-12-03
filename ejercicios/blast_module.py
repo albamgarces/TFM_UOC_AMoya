@@ -19,60 +19,69 @@ compt = {}
 compt["fasta"] = [".fa", ".faa", ".mpfa", ".fna", ".fsa", ".fas", ".fasta"]
 
 #blastp -query fasta_file -db name -outfmt '6 std qlen slen' -num_threads X -out name_out
-def makeblast_results(arg_dict):
-    #create a commandline fotr the NCBI BLAST+ program blastp
-    #cline = NcbiblastpCommandline(query=arg_dict["fasta_file"], db=(arg_dict["db_name"] + '.phr'), )
-    file_name_abs_path = os.path.abspath(arg_dict["fasta_file"])
-    base, extension = os.path.splitext(file_name_abs_path)
-    if extension in compt["fasta"]:
-        output_path = "%s_blastp_results.txt" % base
-        db_path = "%s.phr" % arg_dict["db_name"]
-    
-        cmd_makeblast_results = "blastp -query %s -db  %s -outfmt \'6 std qlen slen|' -num_threads 1 -out %s" %(arg_dict["fasta_file"], arg_dict["db_name"], output_path)
-        code = system_call(cmd_makeblast_results)
-        if (code == 'FAIL'):
-                print ('****ERROR: Some error happened during the blastp command')
-                print (cmd_makeblast_results)
-                exit()  
-    else:
-            print("#####")
-            print("Please provide a FASTA file")
-            print(compt)
-            print("#####")
+# def makeblast_results(arg_dict):
+#     #create a commandline fotr the NCBI BLAST+ program blastp
+#     #cline = NcbiblastpCommandline(query=arg_dict["fasta_file"], db=(arg_dict["db_name"] + '.phr'), )
+#     file_name_abs_path = os.path.abspath(arg_dict["fasta_file"])
+#     base, extension = os.path.splitext(file_name_abs_path)
+#     if extension in compt["fasta"]:
+#         output_path = "%s_blastp_results.txt" % base
+#         db_path = "%s.phr" % arg_dict["db_name"]
+#     
+#         cmd_makeblast_results = "blastp -query %s -db  %s -outfmt \'6 std qlen slen|' -num_threads 1 -out %s" %(arg_dict["fasta_file"], arg_dict["db_name"], output_path)
+#         code = system_call(cmd_makeblast_results)
+#         if (code == 'FAIL'):
+#                 print ('****ERROR: Some error happened during the blastp command')
+#                 print (cmd_makeblast_results)
+#                 exit()  
+#     else:
+#             print("#####")
+#             print("Please provide a FASTA file")
+#             print(compt)
+#             print("#####")
 
 #https://github.com/HCGB-IGTP/HCGB_python_functions/blob/ce1762b709e3b9094c0630f63bfb9d33544ed4c3/HCGB/functions/blast_functions.py
 def makeblastdb(arg_dict):
     ## generate blastdb for genome
     #phr is the header file, pin is the index file, psq is the sequence file
-    if (os.path.isfile(arg_dict["db_name"] + '.phr')):
-        print ("+ BLAST database is already generated...")
-    else:
-        
+    file_name_abs_path = os.path.abspath(arg_dict["fasta_file"])
+    name_file, extension = os.path.splitext(file_name_abs_path)
+    output_path = "%s_blastp_results.txt" % arg_dict["db_name"]
+    if arg.debug:
+        print("## Debug: name_file and extension ")
+        print(os.path.splitext(file_name_abs_path))
+            
+    if extension in compt["fasta"]:
+            
         if arg.debug:
             print("## DEBUG: Format input file ")
             print(compt)
-            
-        file_name_abs_path = os.path.abspath(arg_dict["fasta_file"])
-        name_file, extension = os.path.splitext(file_name_abs_path)
-        if arg.debug:
-            print("## Debug: name_file and extension ")
-            print(os.path.splitext(file_name_abs_path))
-            
-        if extension in compt["fasta"]:
-            cmd_makeblastdb = "%s -in %s -input_type fasta -dbtype %s -out %s" %(arg_dict["executable"], arg_dict["fasta_file"], 'prot', arg_dict["db_name"])
-            code = system_call(cmd_makeblastdb)
+    
+        if (os.path.isfile(arg_dict["db_name"] + '.phr')):
+            print ("+ BLAST database is already generated...")
+                
+        cmd_makeblastdb = "%s -in %s -input_type fasta -dbtype %s -out %s" %(arg_dict["executable"], arg_dict["fasta_file"], 'prot', arg_dict["db_name"])
+        code = system_call(cmd_makeblastdb)
             ##
             ## -> ¿distinguir que sea un fasta con aminoácidos y no nucleótidos?
             ##
-            if (code == 'FAIL'):
-                print ('****ERROR: Some error happened during the makeblastDB command')
-                print (cmd_makeblastdb)
-                exit()
-        else:
-            print("#####")
-            print("Please provide a FASTA file")
-            print(compt)
-            print("#####")
+        if (code == 'FAIL'):
+            print ('****ERROR: Some error happened during the makeblastDB command')
+            print (cmd_makeblastdb)
+            exit()
+    
+        cmd_makeblast_results = "blastp -query %s -db  %s -outfmt \'6 std qlen slen|' -num_threads 1 -out %s" %(arg_dict["fasta_file"], arg_dict["db_name"], output_path)
+        code_results = system_call(cmd_makeblast_results)
+        if (code_results == 'FAIL'):
+            print ('****ERROR: Some error happened during the blastp command')
+            print (cmd_makeblast_results)
+            exit()  
+    
+    else:
+        print("#####")
+        print("Please provide a FASTA file")
+        print(compt)
+        print("#####")
             
         
 
@@ -144,6 +153,6 @@ if arg.debug:
   
 if __name__ == "__main__":
     makeblastdb(arg_dict)
-    makeblast_results(arg_dict)  
+    #makeblast_results(arg_dict)  
   
     
