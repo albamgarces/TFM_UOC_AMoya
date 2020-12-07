@@ -1,3 +1,0 @@
-,locus_tag,protein_id,gene,start,end,strand,pseudo,product,Dbxref,inference,type,ID,Parent,Name,gbkey,transl_table,source,phase
-CDS_NC_009641.1_516_1878_pos,NWMN_RS00005,WP_001290433.1,dnaA,516,1878,pos,,chromosomal replication initiator protein DnaA,Genbank:WP_001290433.1,COORDINATES: similar to AA sequence:RefSeq:YP_498609.1,CDS,cds-WP_001290433.1,gene-NWMN_RS00005,WP_001290433.1,CDS,11,Protein Homology,0
-CDS_NC_009641.1_42379_42581_neg,NWMN_RS15025,,,42379,42581,neg,true,hypothetical protein,,COORDINATES: similar to AA sequence:RefSeq:WP_001838734.1,CDS,cds-NWMN_RS15025,gene-NWMN_RS15025,,CDS,11,Protein Homology,0

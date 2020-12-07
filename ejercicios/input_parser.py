@@ -3,17 +3,19 @@ Created on 25 oct. 2020
 
 @author: alba
 '''
-import os.path
-import Bio
-from Bio import SeqIO
+import os
 import sys
-import protein_gbf
-import protein_gff
 import output
 
-#protein_gbf.test()
 import argparse
 from argparse import ArgumentParser
+
+import Bio
+from Bio import SeqIO
+
+import protein_gbf
+import protein_gff
+
 
 ############
     # 1: identificar annot_file: GFF / Genbank / None
@@ -27,57 +29,46 @@ from argparse import ArgumentParser
     # ToDO: create gtf parser
 #############
 
-def result_folder (arg_dict):
-    if arg_dict["out_folder"] is None:
-        file_name_abs_path = os.path.abspath(arg_dict["annot_file"])
-        name_file, extension = os.path.splitext(file_name_abs_path)
-        output_path = "%s_output" % name_file
-        output.create_folder(output_path)
-          
-    else:
-        output_path= os.path.abspath(arg_dict["out_folder"]) 
-        output.create_folder(output_path)
-        
-     #quiero: poder dar una carpeta y que se guarde ahí  
-         
-        
+#####       
 def extension(arg_dict):
         
     compt = {}
     compt["fasta"] = [".fa", ".faa", ".mpfa", ".fna", ".fsa", ".fas", ".fasta"]
     compt["genbank"] = [".genbank", ".gb", ".gbf", ".gbff", ".gbk"]
-    compt["GFF"] = {".gff"}
+    compt["GFF"] = [".gff"]
     
     if arg.debug:
         print("## DEBUG: Format input file ")
         print(compt)
+        
+    ## output
+    output_path= os.path.abspath(arg_dict["out_folder"]) 
+    output.create_folder(output_path)
      
-    #get  annot file absolute path
-    
+    #get  annot file absolute path    
     file_name_abs_path = os.path.abspath(arg_dict["annot_file"])
     name_file, extension = os.path.splitext(file_name_abs_path)
     
     if arg.debug:
-        print("## Debug: name_file and extension ")
+        print("## DEBUG: name_file and extension ")
         print(os.path.splitext(file_name_abs_path))
          
-    #get protein fasta file and annotation csv file
-    
+    #get protein fasta file and annotation csv file    
     if extension in compt["genbank"]:
         if not arg_dict["ref_file"] is None:
             print("######")
-            print("Sorry, we don't need a ref file to parse a genbank file'")
+            print("Sorry, we don't need a ref file to parse a genbank file")
             print("######")
         else:
-            
-            protein_gbf.gbf_parser(arg_dict["annot_file"])
-            protein_gbf.main(arg_dict["annot_file"])
+        ## call gbf_parser
+            protein_gbf.gbf_parser_caller(arg_dict["annot_file"], output_path, arg_dict["debug"])
     
     elif extension in compt["GFF"]:
         if arg_dict["ref_file"]==None:
             print("######")
             print("Please provide a ref file FASTA format")
             print("######")
+            print(parser.print_help())
         else:
             ref_name_abs_path = os.path.abspath(arg_dict["ref_file"])
             ref_name, ref_extension = os.path.splitext(ref_name_abs_path)
@@ -87,8 +78,8 @@ def extension(arg_dict):
                 print(os.path.splitext(ref_name_abs_path))
             
             if ref_extension in compt["fasta"]:
-                protein_gff.protein_recs(arg_dict["annot_file"], arg_dict["ref_file"])
-                protein_gff.main(arg_dict["annot_file"], arg_dict["ref_file"])
+                #protein_gff.protein_recs(arg_dict["annot_file"], arg_dict["ref_file"])
+                protein_gff.gff_parser_caller(arg_dict["annot_file"], arg_dict["ref_file"], output_path, arg_dict["debug"])
                     
             else:
                 print("######")
@@ -102,10 +93,8 @@ def extension(arg_dict):
         print("######")
        
 
-############
 ####################
-## starting
-####################
+## arguments
 ####################
     
 
@@ -114,7 +103,7 @@ parser = ArgumentParser(prog='inputParser',
                         description="Get proteins sequences from annotation file")
 parser.add_argument("-a", "--annot_file", metavar="", help="Annotation file")
 parser.add_argument("-r", "--ref_file", metavar="", help="Genome references FASTA file")
-parser.add_argument("-p", "--prot_file", metavar="", help="Protein sequence file")
+#parser.add_argument("-p", "--prot_file", metavar="", help="Protein sequence file")
 parser.add_argument("-o", "--out_folder", metavar= "", help="Results folder")
 parser.add_argument("--debug", action="store_true", default=False)   
 
@@ -122,21 +111,10 @@ arg = parser.parse_args()
 arg_dict = vars(arg)
   
 
-
-# if not arg.annot_file is None:
-#     file_given = arg.annot_file
-#     print("file given")
-#     print(file_given)
-#     print(" ")
-# elif not arg.ref_file is None:
-#     ref_file = arg.ref_file
-#     print("ref file given")
-#     print(ref_file)
-#     print("")
     
-if arg.annot_file is None and arg.out_folder is None:
+if arg.annot_file is None or arg.out_folder is None:
     print("######")
-    print("Please provide either an annotation file or an output path folder")
+    print("Please provide either an annotation file or/and an output path folder")
     print("######")
     print(parser.print_help())
     exit()
@@ -151,5 +129,4 @@ if arg.debug:
 ## Cuando no se importe como un modulo este script, se ejecutara esto
 if __name__ == '__main__':
     extension(arg_dict)
-    #result_folder(arg_dict)
          

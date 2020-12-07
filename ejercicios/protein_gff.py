@@ -3,58 +3,56 @@ Created on 28 oct. 2020
 
 @author: alba
 '''
-####ojo con los inferred_parents###############
-# gff_file = "/home/alba/git/TFM_UOC_AMoya/data/example_NCBI/example1_genomic.gff"
-# ref_file = "/home/alba/git/TFM_UOC_AMoya/data/example_NCBI/example1_genomic.fna"
-
 import sys
 import os
-import operator
-from functools import reduce
-
+import pandas as pd
+import numpy as np
+import output
 import Bio
 from Bio import SeqIO, Seq
 from Bio.SeqRecord import SeqRecord
 import BCBio
 from BCBio import GFF
 
-import pandas as pd
-import numpy as np
-
-import output
-
-
-def main (gff_file, ref_file, debug=False):
+#### take care of the inferred parents ####
+#####
+def main (gff_file, ref_file, output_folder, debug=False):
+    #get name
+    base, ext = os.path.splitext(gff_file)
+    gff_file = os.path.abspath(gff_file)
+    
+    #create folder
+    output_path = os.path.abspath(output_folder)
+    output.create_folder(output_path)
+    
+    if (debug):
+        print ("## DEBUG:")
+        print ("base:" , base)
+        print ("ext:" , ext)
+        print ()
+        
+    gff_parser_caller(gff_file, ref_file, output_path, debug)
+    
+    
+#####
+def gff_parser_caller(gff_file, ref_file, output_path, debug):
+    
+    out_file = "%s/gff_proteins.fa" % output_path
     with open (ref_file) as in_handle:
         ref_recs = SeqIO.to_dict(SeqIO.parse(in_handle, "fasta"))
     
-    ## JF
     if (debug):
         print ("## DEBUG:")
         print (ref_recs)
         print ()
 
-    base, ext = os.path.splitext(gff_file)
-    output_path = "%s_output" % base
-    output.create_folder(output_path)
-    out_file = "%s/gff_proteins.fa" % output_path
-
-    ## JF
-    if (debug):
-        print ("## DEBUG:")
-        print ("base:" , base)
-        print ("ext:" , ext)
-        print ("out_file:" , out_file)
-        print ()
-
     with open(out_file, "w") as out_handle:
-        SeqIO.write(protein_recs(gff_file, ref_recs, debug=debug), out_handle, "fasta")
+        SeqIO.write(protein_recs(gff_file, ref_recs, output_path, debug=debug), out_handle, "fasta")
 
-    
-     
-    
-#generate protein records from gff_predct        
-def protein_recs(gff_file, ref_recs, debug=False):
+#####       
+def protein_recs(gff_file, ref_recs, output_path, debug=False):
+    #create an empty dataframe. The most important info as first columns
+    #all the other file info will be filled next
     columns = ['locus_tag', 'protein_id', 'gene',  'start',
                'end', 'strand', 'pseudo', 'product', 'Dbxref', 'inference']
     annot_df = pd.DataFrame(data=None, columns=columns)
@@ -64,7 +62,6 @@ def protein_recs(gff_file, ref_recs, debug=False):
         ##sort by CDS type. Duplicate genes analysis just needs coding regions to proteins.
         limit_info = dict(gff_type=["CDS"])    
         for rec in GFF.parse(in_handle, limit_info = limit_info, base_dict=ref_recs):
-            ## JF
             if (debug):
                 print ("## DEBUG: rec")
                 print (rec)
@@ -95,17 +92,28 @@ def protein_recs(gff_file, ref_recs, debug=False):
                     strand = "neg"
                 else:   
                     strand = "pos"
-                
+                    
+                #we create an ID for each entry     
                 protID = feature.type + "_" + rec.id + "_" + str(feature.location.nofuzzy_start) + "_" + str(feature.location.nofuzzy_end) + "_" + strand
+#                 if (debug):
+#                     print("#DEBUG: protID")
+#                     print(protID)
+#                     print()
+                
                 annot_df.loc[protID, ["type", "start", "end", "strand"]] = [feature.type, feature.location.nofuzzy_start, feature.location.nofuzzy_end, strand]
                 qualif = feature.qualifiers
+#                 if (debug):
+#                     print("#DEBUG: Qualifiers")
+#                     print(qualif)
+#                     print()
                 
                 for keys, values in qualif.items():
+                    
+                    #fill the dataframe info
                     if keys == "Note":
                         continue
                     annot_df.loc[protID,[keys]] = [values[0]]
                     
-                
                 ## get gene sequence
                 gene_seq = Seq.Seq(str(rec.seq[feature.location.nofuzzy_start:feature.location.nofuzzy_end]))
 
@@ -120,13 +128,11 @@ def protein_recs(gff_file, ref_recs, debug=False):
                     if feature.strand == -1:
                         gene_seq = gene_seq.reverse_complement()
                     
-                    #delete STOP simbols
+                    #delete STOP symbols
                     protein_seq = gene_seq.translate(to_stop=True)
                     
                     yield(SeqRecord(protein_seq, feature.qualifiers["ID"][0], "", ""))
 
-    base, ext = os.path.splitext(gff_file)
-    output_path = "%s_output" % base
     csv_file = "%s/gff_df.csv" % output_path            
     annot_df.to_csv(csv_file, header=True)
     
@@ -136,21 +142,18 @@ def protein_recs(gff_file, ref_recs, debug=False):
         print()
         
 if __name__ == "__main__":
-    if len(sys.argv) != 3:
+    if len(sys.argv) != 4:
         print (__doc__)
         
-        ## JF: Tambien es util mostrar que se necesta
         print ("## Usage gff_parser")
-        print ("python %s gff_file ref_fasta_file\n" %sys.argv[0])
+        print ("python %s gff_file ref_fasta_file output_folder\n" %sys.argv[0])
 
         sys.exit()
 
-    ## prueba las dos lineas de codigo y entiende la diferencia.
     main(*sys.argv[1:], debug=True)
     #main(*sys.argv[1:])
 
     # la variable debug no es obligatoria. tiene un "por defecto definido"
-    # fijate donde se define main (linea 22)
     # Se utiliza el "=" para indicar el default.
         
         

@@ -3,44 +3,47 @@ Created on 30 oct. 2020
 
 @author: alba
 '''
-from Bio import SeqIO, Seq
+
 import os
 import sys
-from Bio.SeqRecord import SeqRecord
 import pandas as pd
 import numpy as np
-
-from Bio.SeqIO.FastaIO import SimpleFastaParser
-
 import output
 
-def main (gbf_file, debug=False):
-    with open(gbf_file, "r") as input_handle:
-        sequences = [rec for rec in SeqIO.parse(input_handle, "genbank")]
-#     if (debug):
-#         print ("## DEBUG:")
-#         print (sequences)
-#         print ()
-        
-    base, ext = os.path.splitext(gbf_file)
-    output_path = "%s_output" % base
-    output.create_folder(output_path)
-    out_file = "%s/gbf_proteins.fa" % output_path
+import Bio
+from Bio import SeqIO, Seq
+from Bio.SeqRecord import SeqRecord
+from Bio.SeqIO.FastaIO import SimpleFastaParser
 
+#####
+def main (gbf_file, output_folder, debug=False):
+    #get name
+    base, ext = os.path.splitext(gbf_file)
+    gbf_file = os.path.abspath(gbf_file)
+    
+    #create folder
+    output_path = os.path.abspath(output_folder)
+    output.create_folder(output_path)
+    
     if (debug):
         print ("## DEBUG:")
         print ("base:" , base)
         print ("ext:" , ext)
-        print ("out_file:" , out_file)
         print ()
         
+    gbf_parser_caller(gbf_file, output_path, debug)
+ 
+ 
+#####     
+def gbf_parser_caller(gbf_file, output_path, debug):
+    
+    out_file = "%s/gbf_proteins.fa" % output_path
+    
     with open(out_file, "w") as output_handle:
-        SeqIO.write(gbf_parser(gbf_file, debug=debug), output_handle, "fasta")
+        SeqIO.write(gbf_parser(gbf_file, output_path, debug=debug), output_handle, "fasta")
     
-    
-
-
-def gbf_parser(gbf_file, debug=False):
+#####
+def gbf_parser(gbf_file, output_path, debug=False):
     
     #create an empty dataframe. The most important info as first columns
     #all the other file info will be filled next
@@ -110,8 +113,6 @@ def gbf_parser(gbf_file, debug=False):
                 yield(SeqRecord(gene_seq, feature.qualifiers["locus_tag"][0],"",""))
         
     
-    base, ext = os.path.splitext(gbf_file)
-    output_path = "%s_output" % base
     csv_file = "%s/df.csv" % output_path            
     annot_df.to_csv(csv_file, header=True)
     
@@ -121,12 +122,12 @@ def gbf_parser(gbf_file, debug=False):
                
                
 if __name__ == "__main__":
-    if len(sys.argv) != 2:
+    if len(sys.argv) != 3:
         print (__doc__)
         
        
         print ("## Usage protein_gbf")
-        print ("python %s gbf_file\n" %sys.argv[0])
+        print ("python %s gbf_file output_folder\n" %sys.argv[0])
        
 
         sys.exit()
