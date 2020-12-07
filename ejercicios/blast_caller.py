@@ -14,10 +14,6 @@ from argparse import ArgumentParser
 
 from Bio.Blast.Applications import NcbiblastpCommandline
 
-
-
-
-
 #https://github.com/HCGB-IGTP/HCGB_python_functions/blob/ce1762b709e3b9094c0630f63bfb9d33544ed4c3/HCGB/functions/blast_functions.py
 #####
 def makeblastdb(makeblastdb_exe, fasta_file, db_path_name):
@@ -38,7 +34,7 @@ def makeblastdb(makeblastdb_exe, fasta_file, db_path_name):
 #####        
 def blastp_caller(blastp_exe, fasta_file, db_path_name, output_file):
     print()
-    cmd_makeblast_results = "%s -query %s -db  %s -outfmt \'6 std qlen slen\' -num_threads 1 -out %s" %(blastp_exe, fasta_file, db_path_name, output_file)
+    cmd_makeblast_results = "%s -query %s -db %s -outfmt \'6 std qlen slen\' -num_threads 1 -out %s" %(blastp_exe, fasta_file, db_path_name, output_file)
     code_results = system_call(cmd_makeblast_results)
     
     #Establecer unos cutoffs (evalue=1e-05 (col11); bit score=50 (col12), etc) 
@@ -51,7 +47,7 @@ def blastp_caller(blastp_exe, fasta_file, db_path_name, output_file):
     else:
         return(True)
     
-    
+#####    
 def create_blast_results(arg_dict):
     
     #possible extensions    
@@ -62,6 +58,7 @@ def create_blast_results(arg_dict):
     #phr is the header file, pin is the index file, psq is the sequence file
     file_name_abs_path = os.path.abspath(arg_dict["fasta_file"])
     name_file, extension = os.path.splitext(file_name_abs_path)
+    basename= os.path.basename(name_file)
     #output_path = "%s_blastp_results.txt" % arg_dict["db_name"]
     if arg.debug:
         print("## Debug: name_file and extension ")
@@ -79,23 +76,26 @@ def create_blast_results(arg_dict):
         ##-> blast_folder = /usr/bin
         #name_file = "name"
         if (arg_dict["db_name"]):
-            db_path_name = os.path.abspath(arg_dict["db_name"])
-        else:  
-            db_path_name = os.path.abspath(arg_dict["out_folder"]) + "/" + name_file + "_db"
+            db_path_name = os.path.abspath(arg_dict["db_name"])+ "/" + arg_dict["db_name"]
+            output_file = os.path.abspath(arg_dict["db_name"]) + "/BLAST_raw_results.txt"
+            #output.create_folder(db_path_name)
+        elif (arg_dict["out_folder"]):
+            db_path_name = os.path.abspath(arg_dict["out_folder"]) + "/" + basename + "_db"
+            output_file = os.path.abspath(arg_dict["out_folder"]) + "/BLAST_raw_results.txt"
+            #output.create_folder(os.path.abspath(arg_dict["out_folder"]))
+        else:
+            db_path_name = basename + "_db"
+            output_file = "BLAST_raw_results.txt"
     
         if (os.path.isfile(db_path_name + '.phr')):
             print ("+ BLAST database is already generated...")
         else:
-            output.create_folder(db_path_name)
             makeblastdb(makeblastdb_exe, arg_dict["fasta_file"], db_path_name)
         
         ## create blastp outfile
-        
-        output_file = os.path.abspath(db_path_name) + "/BLAST_raw_results.txt"
-        blastp_caller(blastp_exe, arg_dict["fasta_file"], db_path_name, output_file)
+            
+            blastp_caller(blastp_exe, arg_dict["fasta_file"], db_path_name, output_file)
                  
-          
-    
     else:
         print("#####")
         print("Please provide a FASTA file")
@@ -105,6 +105,7 @@ def create_blast_results(arg_dict):
         
 
 #https://github.com/HCGB-IGTP/HCGB_python_functions/blob/2b3b1132fb885c8cb22f4d10fd4c00c25fa10fb8/HCGB/functions/system_call_functions.py
+#####
 def system_call(cmd, returned=False, message=True):
     """Generates system call using subprocess.check_output"""
     ## call system
@@ -147,15 +148,7 @@ parser.add_argument("--debug", action="store_true", default=False)
 
 arg = parser.parse_args()
 arg_dict = vars(arg)
-if arg.debug:
-    print(arg)  
     
-# if arg.db_name is None:
-#     print("#####")
-#     print("Please provide a name for your new database")
-#     print("#####")
-#     print(parser.print_help())
- 
 if arg.fasta_file is None:
     print("#####")
     print("Please provide a proteins sequences FASTA file")
