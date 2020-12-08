@@ -6,13 +6,12 @@ Created on 28 nov. 2020
 
 import os
 import sys
-import output
 
 import subprocess
 import argparse
 from argparse import ArgumentParser
 
-from Bio.Blast.Applications import NcbiblastpCommandline
+#from Bio.Blast.Applications import NcbiblastpCommandline
 
 #https://github.com/HCGB-IGTP/HCGB_python_functions/blob/ce1762b709e3b9094c0630f63bfb9d33544ed4c3/HCGB/functions/blast_functions.py
 #####
@@ -36,9 +35,6 @@ def blastp_caller(blastp_exe, fasta_file, db_path_name, output_file):
     print()
     cmd_makeblast_results = "%s -query %s -db %s -outfmt \'6 std qlen slen\' -num_threads 1 -out %s" %(blastp_exe, fasta_file, db_path_name, output_file)
     code_results = system_call(cmd_makeblast_results)
-    
-    #Establecer unos cutoffs (evalue=1e-05 (col11); bit score=50 (col12), etc) 
-    #y quedarte con los buenos alineamientos.
     
     if (code_results == 'FAIL'):
         print ('****ERROR: Some error happened during the blastp command')
@@ -78,11 +74,9 @@ def create_blast_results(arg_dict):
         if (arg_dict["db_name"]):
             db_path_name = os.path.abspath(arg_dict["db_name"])+ "/" + arg_dict["db_name"]
             output_file = os.path.abspath(arg_dict["db_name"]) + "/BLAST_raw_results.txt"
-            #output.create_folder(db_path_name)
         elif (arg_dict["out_folder"]):
             db_path_name = os.path.abspath(arg_dict["out_folder"]) + "/" + basename + "_db"
-            output_file = os.path.abspath(arg_dict["out_folder"]) + "/BLAST_raw_results.txt"
-            #output.create_folder(os.path.abspath(arg_dict["out_folder"]))
+            output_file = os.path.abspath(arg_dict["out_folder"]) + "/" + basename + "BLAST_raw_results.txt"
         else:
             db_path_name = basename + "_db"
             output_file = "BLAST_raw_results.txt"
