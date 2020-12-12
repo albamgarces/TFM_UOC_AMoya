@@ -26,15 +26,17 @@ from Bio.Blast.Record import Blast
 ######
 #test_file:
 #Total:16prots
-#1=2=3; 4=5=6; 7=8=9
-#10=11=12; 13=14=15; 16
+#A=B=C; D=E=F (34aa changed);
+#G=H=I (180aa from A + whole J);
+#J=K=L; M=N=O (17aa changed);
+#P
 
 ######
 def filter_data(arg_dict):
     columns = ["qseqid", "sseqid", "pident", "length",
            "mismatch", "gapopen", "qstart", "qend",
            "sstart", "send", "evalue", "bitscore",
-           "qlen", "slen"]
+           "qlen", "slen", "aln_pct"]
 #################################################################
 # qseqid -> query (e.g., unknown gene) sequence id
 # sseqid -> subject (e.g., reference genome) sequence id
@@ -54,6 +56,7 @@ def filter_data(arg_dict):
 #            The higher the bit-score, the better the sequence similarity
 # qlen -> Query sequence length
 # slen -> Subject sequence length
+# aln_pct -> alignement percentage in query (length/qlen*100)
 ################################################################
     file_name_abs_path = os.path.abspath(arg_dict["text_file"])
     name_file, extension = os.path.splitext(file_name_abs_path)
@@ -61,26 +64,39 @@ def filter_data(arg_dict):
         #dataframe with raw blast results
         raw_blast = pd.read_csv(file_name_abs_path, sep="\t",
                                 header = None, names=columns)
+        
+        #fill aln_pct column
+        raw_blast["aln_pct"] = (raw_blast["length"]/raw_blast["qlen"]*100).round(2)
+        #filter mirror pairs
+        del_mirror =pd.DataFrame(np.sort(raw_blast[["qseqid", "sseqid"]], axis=1))
+        raw_blast = raw_blast[~del_mirror.duplicated()]
         print(raw_blast)
-        raw_csv = "%s_csv.csv" % name_file
-        raw_blast.to_csv(raw_csv, header=True, index=False)
+#         raw_csv = "%s_csv.csv" % name_file
+#         raw_blast.to_csv(raw_csv, header=True, index=False)
+        
     else:
         print("#####")
         print("Please provide a .txt file")
         print("#####")
+        exit()
         
     #when Blast_file_results is done, evalue>10 is gone
     filter_evalue = raw_blast["evalue"] <= arg_dict["evalue"]
     filter_bitscore = raw_blast["bitscore"] >= arg_dict["evalue"]
-    filter_pident = raw_blast["pident"] >= arg_dict["percentage"]
+    filter_alnpct = raw_blast["aln_pct"] >= arg_dict["percentage"]
     filter_id = raw_blast["qseqid"] != raw_blast["sseqid"]
-    filtered_results = raw_blast[filter_evalue & filter_bitscore & filter_pident & filter_id]
+    filtered_results = raw_blast[filter_evalue & filter_bitscore & filter_alnpct & filter_id]
+    
+    
     #sort by pident (desc), evalue(asc), bitscore(desc)
-    by_pident = filtered_results.sort_values(["pident", "evalue", "bitscore"],
+    by_alnpct = filtered_results.sort_values(["aln_pct", "evalue", "bitscore"],
                                        ascending=[False, True, False])
-    print(by_pident)
+    
+
+    print(by_alnpct)
+    print("%s pairs filtered from %s" % (by_alnpct.shape[0], raw_blast.shape[0]))
     sort_csv = "filtered_results.csv"
-    by_pident.to_csv(sort_csv, header=True, index=False)
+    by_alnpct.to_csv(sort_csv, header=True, index=False)
 
 
 ######
@@ -92,7 +108,7 @@ parser = ArgumentParser(prog='dupSearcher',
 parser.add_argument("-t", "--text_file", metavar="", help="Blast raw results text file")
 parser.add_argument("-e", "--evalue", type=float, metavar="", default= 1e-05, help="BLAST e-value: number of expected hits of similar quality (score) that could be found just by chance.")
 parser.add_argument("-b", "--bitscore", type=float, metavar="", default=50, help="BLAST bit-score: requires size of a sequence database in which the current match could be found just by chance.")
-parser.add_argument("-p", "--percentage", type=float, metavar="", default=80, help="Percentage of identical matches.")
+parser.add_argument("-p", "--percentage", type=float, metavar="", default=80, help="Percentage of alignement in query")
 parser.add_argument("-o", "--out_folder", metavar= "", help="Results folder")
 parser.add_argument("--debug", action="store_true", default=False)   
  
