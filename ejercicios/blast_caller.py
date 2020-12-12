@@ -76,7 +76,7 @@ def create_blast_results(arg_dict):
             output_file = os.path.abspath(arg_dict["db_name"]) + "/BLAST_raw_results.txt"
         elif (arg_dict["out_folder"]):
             db_path_name = os.path.abspath(arg_dict["out_folder"]) + "/" + basename + "_db"
-            output_file = os.path.abspath(arg_dict["out_folder"]) + "/" + basename + "BLAST_raw_results.txt"
+            output_file = os.path.abspath(arg_dict["out_folder"]) + "/" + basename + "_BLAST_raw_results.txt"
         else:
             db_path_name = basename + "_db"
             output_file = "BLAST_raw_results.txt"

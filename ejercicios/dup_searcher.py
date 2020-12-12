@@ -11,10 +11,7 @@ import numpy as np
 import argparse
 from argparse import ArgumentParser
 
-from Bio import SearchIO
-from Bio.Blast import NCBIXML
-from Bio.Blast.Record import Blast
-#def filter_data(arg_dict):
+import blast_caller
 
 #https://biopython-tutorial.readthedocs.io/en/latest/notebooks/07%20-%20Blast.html#Parsing-BLAST-output
 
@@ -58,28 +55,55 @@ def filter_data(arg_dict):
 # slen -> Subject sequence length
 # aln_pct -> alignement percentage in query (length/qlen*100)
 ################################################################
-    file_name_abs_path = os.path.abspath(arg_dict["text_file"])
-    name_file, extension = os.path.splitext(file_name_abs_path)
-    if extension == ".txt":
-        #dataframe with raw blast results
-        raw_blast = pd.read_csv(file_name_abs_path, sep="\t",
-                                header = None, names=columns)
-        
-        #fill aln_pct column
-        raw_blast["aln_pct"] = (raw_blast["length"]/raw_blast["qlen"]*100).round(2)
-        #filter mirror pairs
-        del_mirror =pd.DataFrame(np.sort(raw_blast[["qseqid", "sseqid"]], axis=1))
-        raw_blast = raw_blast[~del_mirror.duplicated()]
-        print(raw_blast)
-#         raw_csv = "%s_csv.csv" % name_file
-#         raw_blast.to_csv(raw_csv, header=True, index=False)
-        
-    else:
-        print("#####")
-        print("Please provide a .txt file")
-        print("#####")
-        exit()
-        
+
+    if arg_dict["text_file"]:
+        if arg_dict["fasta_file"]==None:
+            
+            file_name_abs_path = os.path.abspath(arg_dict["text_file"])
+            name_file, extension = os.path.splitext(file_name_abs_path)
+            
+            if extension == ".txt":
+                #dataframe with raw blast results
+                raw_blast = pd.read_csv(file_name_abs_path, sep="\t",
+                                        header = None, names=columns)
+            else:
+                print("#####")
+                print("Please provide a BLAST results .txt file")
+                print("#####")
+                exit()
+        else:
+            print("#####")
+            print("Please provide either a a BLAST results .txt file OR an annotation FASTA file")
+            print("#####")
+            
+    elif arg_dict["fasta_file"]:
+        blast_caller.create_blast_results(arg_dict)
+        file_name_abs_path = os.path.abspath(arg_dict["fasta_file"])
+        name_file, extension = os.path.splitext(file_name_abs_path)
+        basename= os.path.basename(name_file)
+        if (arg_dict["db_name"]): 
+            output_path= os.path.abspath(arg_dict["db_name"])
+            raw_blast = pd.read_csv(output_path + "/BLAST_raw_results.txt",
+                                    sep="\t", header = None, names=columns)
+            sort_csv = "%s/filtered_results.csv" % output_path
+        elif (arg_dict["out_folder"]):
+            output_path= os.path.abspath(arg_dict["out_folder"])
+            raw_blast= pd.read_csv(output_path + "/" + basename + "_BLAST_raw_results.txt",
+                                   sep="\t", header = None, names=columns)
+            sort_csv = "%s/filtered_results.csv" % output_path
+        else:
+            raw_blast = pd.read_csv("BLAST_raw_results.txt",
+                                    sep="\t", header = None, names=columns)
+            sort_csv = "filtered_results.csv"
+            
+    #fill aln_pct column
+    raw_blast["aln_pct"] = (raw_blast["length"]/raw_blast["qlen"]*100).round(2)
+    
+    #filter mirror pairs
+    del_mirror =pd.DataFrame(np.sort(raw_blast[["qseqid", "sseqid"]], axis=1))
+    raw_blast = raw_blast[~del_mirror.duplicated()]
+    print(raw_blast)
+           
     #when Blast_file_results is done, evalue>10 is gone
     filter_evalue = raw_blast["evalue"] <= arg_dict["evalue"]
     filter_bitscore = raw_blast["bitscore"] >= arg_dict["evalue"]
@@ -87,39 +111,41 @@ def filter_data(arg_dict):
     filter_id = raw_blast["qseqid"] != raw_blast["sseqid"]
     filtered_results = raw_blast[filter_evalue & filter_bitscore & filter_alnpct & filter_id]
     
-    
     #sort by pident (desc), evalue(asc), bitscore(desc)
     by_alnpct = filtered_results.sort_values(["aln_pct", "evalue", "bitscore"],
                                        ascending=[False, True, False])
     
 
     print(by_alnpct)
+    print("#####")
     print("%s pairs filtered from %s" % (by_alnpct.shape[0], raw_blast.shape[0]))
-    sort_csv = "filtered_results.csv"
+    print("#####")
+    
+    #save results as a .csv file
     by_alnpct.to_csv(sort_csv, header=True, index=False)
 
 
 ######
 ##
 ######
+
 parser = ArgumentParser(prog='dupSearcher',
                         formatter_class=argparse.RawDescriptionHelpFormatter,
                         description="Search for genomic duplicated proteins")
 parser.add_argument("-t", "--text_file", metavar="", help="Blast raw results text file")
 parser.add_argument("-e", "--evalue", type=float, metavar="", default= 1e-05, help="BLAST e-value: number of expected hits of similar quality (score) that could be found just by chance.")
-parser.add_argument("-b", "--bitscore", type=float, metavar="", default=50, help="BLAST bit-score: requires size of a sequence database in which the current match could be found just by chance.")
+parser.add_argument("-bs", "--bitscore", type=float, metavar="", default=50, help="BLAST bit-score: requires size of a sequence database in which the current match could be found just by chance.")
 parser.add_argument("-p", "--percentage", type=float, metavar="", default=80, help="Percentage of alignement in query")
 parser.add_argument("-o", "--out_folder", metavar= "", help="Results folder")
-parser.add_argument("--debug", action="store_true", default=False)   
- 
+parser.add_argument("-d", "--db_name", metavar="", help="New database name")
+parser.add_argument("-f", "--fasta_file", metavar="", help="Protein sequences FASTA file")
+parser.add_argument("-b", "--blast_folder", metavar="", help="BLAST binary folder")
+parser.add_argument("--debug", action="store_true", default=False)
+
 arg = parser.parse_args()
 arg_dict = vars(arg)
  
-if arg.text_file is None:
-    print("#####")
-    print("Please provide a BLAST results plain text file")
-    print("#####")
-    print(parser.print_help())
+
      
 if arg.evalue is None:
     print("#####")
@@ -135,7 +161,7 @@ if arg.bitscore is None:
     
 if arg.percentage is None:
     print("#####")
-    print("Note match percentage = 80% is set by default")
+    print("Note alignement in query percentage = 80% is set by default")
     print("#####")
     print(parser.print_help())
 
