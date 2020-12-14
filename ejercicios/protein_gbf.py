@@ -37,7 +37,7 @@ def main (gbf_file, output_folder, debug=False):
 #####     
 def gbf_parser_caller(gbf_file, output_path, debug):
     
-    out_file = "%s/gbf_proteins.fa" % output_path
+    out_file = "%s/proteins.fa" % output_path
     
     with open(out_file, "w") as output_handle:
         SeqIO.write(gbf_parser(gbf_file, output_path, debug=debug), output_handle, "fasta")

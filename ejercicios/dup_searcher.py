@@ -73,7 +73,7 @@ def filter_data(arg_dict):
                 exit()
         else:
             print("#####")
-            print("Please provide either a a BLAST results .txt file OR an annotation FASTA file")
+            print("Please provide either a BLAST results .txt file OR an annotation FASTA file")
             print("#####")
             
     elif arg_dict["fasta_file"]:
@@ -81,6 +81,7 @@ def filter_data(arg_dict):
         file_name_abs_path = os.path.abspath(arg_dict["fasta_file"])
         name_file, extension = os.path.splitext(file_name_abs_path)
         basename= os.path.basename(name_file)
+        
         if (arg_dict["db_name"]): 
             output_path= os.path.abspath(arg_dict["db_name"])
             raw_blast = pd.read_csv(output_path + "/BLAST_raw_results.txt",
@@ -106,12 +107,12 @@ def filter_data(arg_dict):
            
     #when Blast_file_results is done, evalue>10 is gone
     filter_evalue = raw_blast["evalue"] <= arg_dict["evalue"]
-    filter_bitscore = raw_blast["bitscore"] >= arg_dict["evalue"]
+    filter_bitscore = raw_blast["bitscore"] >= arg_dict["bitscore"]
     filter_alnpct = raw_blast["aln_pct"] >= arg_dict["percentage"]
     filter_id = raw_blast["qseqid"] != raw_blast["sseqid"]
     filtered_results = raw_blast[filter_evalue & filter_bitscore & filter_alnpct & filter_id]
     
-    #sort by pident (desc), evalue(asc), bitscore(desc)
+    #sort by aln_pct (desc), evalue(asc), bitscore(desc)
     by_alnpct = filtered_results.sort_values(["aln_pct", "evalue", "bitscore"],
                                        ascending=[False, True, False])
     
@@ -135,7 +136,7 @@ parser = ArgumentParser(prog='dupSearcher',
 parser.add_argument("-t", "--text_file", metavar="", help="Blast raw results text file")
 parser.add_argument("-e", "--evalue", type=float, metavar="", default= 1e-05, help="BLAST e-value: number of expected hits of similar quality (score) that could be found just by chance.")
 parser.add_argument("-bs", "--bitscore", type=float, metavar="", default=50, help="BLAST bit-score: requires size of a sequence database in which the current match could be found just by chance.")
-parser.add_argument("-p", "--percentage", type=float, metavar="", default=80, help="Percentage of alignement in query")
+parser.add_argument("-p", "--percentage", type=float, metavar="", default=80, help="Percentage of alignment in query")
 parser.add_argument("-o", "--out_folder", metavar= "", help="Results folder")
 parser.add_argument("-d", "--db_name", metavar="", help="New database name")
 parser.add_argument("-f", "--fasta_file", metavar="", help="Protein sequences FASTA file")
@@ -161,7 +162,7 @@ if arg.bitscore is None:
     
 if arg.percentage is None:
     print("#####")
-    print("Note alignement in query percentage = 80% is set by default")
+    print("Note alignment in query percentage = 80% is set by default")
     print("#####")
     print(parser.print_help())
 

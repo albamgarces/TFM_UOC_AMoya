@@ -37,7 +37,7 @@ def main (gff_file, ref_file, output_folder, debug=False):
 #####
 def gff_parser_caller(gff_file, ref_file, output_path, debug):
     
-    out_file = "%s/gff_proteins.fa" % output_path
+    out_file = "%s/proteins.fa" % output_path
     with open (ref_file) as in_handle:
         ref_recs = SeqIO.to_dict(SeqIO.parse(in_handle, "fasta"))
     
@@ -133,7 +133,7 @@ def protein_recs(gff_file, ref_recs, output_path, debug=False):
                     
                     yield(SeqRecord(protein_seq, feature.qualifiers["ID"][0], "", ""))
 
-    csv_file = "%s/gff_df.csv" % output_path            
+    csv_file = "%s/df.csv" % output_path            
     annot_df.to_csv(csv_file, header=True)
     
     if (debug):

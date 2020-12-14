@@ -30,7 +30,7 @@ import protein_gff
 #############
 
 #####       
-def extension(arg_dict):
+def input_parser(arg_dict):
         
     compt = {}
     compt["fasta"] = [".fa", ".faa", ".mpfa", ".fna", ".fsa", ".fas", ".fasta"]
@@ -101,7 +101,7 @@ def extension(arg_dict):
 parser = ArgumentParser(prog='inputParser',
                         formatter_class=argparse.RawDescriptionHelpFormatter,
                         description="Get proteins sequences from annotation file")
-parser.add_argument("-a", "--annot_file", metavar="", help="Annotation file")
+parser.add_argument("-a", "--annot_file", metavar="", help="Annotation file: genbank or GFF")
 parser.add_argument("-r", "--ref_file", metavar="", help="Genome references FASTA file")
 #parser.add_argument("-p", "--prot_file", metavar="", help="Protein sequence file")
 parser.add_argument("-o", "--out_folder", metavar= "", help="Results folder")
@@ -128,5 +128,5 @@ if arg.debug:
 
 ## Cuando no se importe como un modulo este script, se ejecutara esto
 if __name__ == '__main__':
-    extension(arg_dict)
+    input_parser(arg_dict)
          

@@ -70,7 +70,7 @@ def create_blast_results(arg_dict):
         makeblastdb_exe = arg_dict["blast_folder"] + "/makeblastdb"
         blastp_exe = arg_dict["blast_folder"] + "/blastp"
         ##-> blast_folder = /usr/bin
-        #name_file = "name"
+
         if (arg_dict["db_name"]):
             db_path_name = os.path.abspath(arg_dict["db_name"])+ "/" + arg_dict["db_name"]
             output_file = os.path.abspath(arg_dict["db_name"]) + "/BLAST_raw_results.txt"
@@ -135,8 +135,6 @@ parser = ArgumentParser(prog='makeblastDB',
 parser.add_argument("-d", "--db_name", metavar="", help="New database name")
 parser.add_argument("-f", "--fasta_file", metavar="", help="Protein sequences FASTA file")
 parser.add_argument("-b", "--blast_folder", metavar="", help="BLAST binary folder")
-# parser.add_argument("-ev", "--evalue", type=float, metavar="", help="BLAST e-value: number of expected hits of similar quality (score) that could be found just by chance.")
-# parser.add_argument("-b", "--bitscore", type=int, metavar="", help="BLAST bit-score: requires size of a sequence database in which the current match could be found just by chance.")
 parser.add_argument("-o", "--out_folder", metavar= "", help="Results folder")
 parser.add_argument("--debug", action="store_true", default=False)   
 
