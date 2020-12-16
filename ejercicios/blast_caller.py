@@ -56,13 +56,13 @@ def create_blast_results(arg_dict):
     name_file, extension = os.path.splitext(file_name_abs_path)
     basename= os.path.basename(name_file)
     #output_path = "%s_blastp_results.txt" % arg_dict["db_name"]
-    if arg.debug:
+    if arg_dict["debug"]:
         print("## Debug: name_file and extension ")
         print(os.path.splitext(file_name_abs_path))
             
     if extension in compt["fasta"]:
             
-        if arg.debug:
+        if arg_dict["debug"]:
             print("## DEBUG: Format input file ")
             print(compt)
             
@@ -128,36 +128,36 @@ def system_call(cmd, returned=False, message=True):
 ## Arguments
 ####################
     
-
-parser = ArgumentParser(prog='makeblastDB',
-                        formatter_class=argparse.RawDescriptionHelpFormatter,
-                        description="Create a BLAST database")
-parser.add_argument("-d", "--db_name", metavar="", help="New database name")
-parser.add_argument("-f", "--fasta_file", metavar="", help="Protein sequences FASTA file")
-parser.add_argument("-b", "--blast_folder", metavar="", help="BLAST binary folder")
-parser.add_argument("-o", "--out_folder", metavar= "", help="Results folder")
-parser.add_argument("--debug", action="store_true", default=False)   
-
-arg = parser.parse_args()
-arg_dict = vars(arg)
+if __name__ == '__main__':
+    parser = ArgumentParser(prog='makeblastDB',
+                            formatter_class=argparse.RawDescriptionHelpFormatter,
+                            description="Create a BLAST database")
+    parser.add_argument("-d", "--db_name", metavar="", help="New database name")
+    parser.add_argument("-f", "--fasta_file", metavar="", help="Protein sequences FASTA file")
+    parser.add_argument("-b", "--blast_folder", metavar="", help="BLAST binary folder")
+    parser.add_argument("-o", "--out_folder", metavar= "", help="Results folder")
+    parser.add_argument("--debug", action="store_true", default=False)   
     
-if arg.fasta_file is None:
-    print("#####")
-    print("Please provide a proteins sequences FASTA file")
-    print("#####")
-    print(parser.print_help())
-     
-if arg.blast_folder is None:
-    print("#####")
-    print("Please provide BLAST binary folder")
-    print("#####")
-    print(parser.print_help())
+    arg = parser.parse_args()
+    arg_dict = vars(arg)
+    create_blast_results(arg_dict)
+    if arg.fasta_file is None:
+        print("#####")
+        print("Please provide a proteins sequences FASTA file")
+        print("#####")
+        print(parser.print_help())
          
-if arg.debug:
-    print("##DEBUG: ##")
-    print("arguments dictionary: ")
-    print(arg)
+    if arg.blast_folder is None:
+        print("#####")
+        print("Please provide BLAST binary folder")
+        print("#####")
+        print(parser.print_help())
+             
+    if arg.debug:
+        print("##DEBUG: ##")
+        print("arguments dictionary: ")
+        print(arg)
   
-create_blast_results(arg_dict) 
+ 
   
     

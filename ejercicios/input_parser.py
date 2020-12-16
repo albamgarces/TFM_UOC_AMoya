@@ -66,7 +66,7 @@ def input_parser(arg_dict):
     elif extension in compt["GFF"]:
         if arg_dict["ref_file"]==None:
             print("######")
-            print("Please provide a ref file FASTA format")
+            print("Please provide a ref_file FASTA format")
             print("######")
             print(parser.print_help())
         else:
@@ -129,4 +129,5 @@ if arg.debug:
 ## Cuando no se importe como un modulo este script, se ejecutara esto
 if __name__ == '__main__':
     input_parser(arg_dict)
+
          

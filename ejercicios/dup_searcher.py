@@ -66,6 +66,12 @@ def filter_data(arg_dict):
                 #dataframe with raw blast results
                 raw_blast = pd.read_csv(file_name_abs_path, sep="\t",
                                         header = None, names=columns)
+                if (arg_dict["out_folder"]):
+                    output_path= os.path.abspath(arg_dict["out_folder"])
+                    sort_csv = "%s/filtered_results.csv" % output_path
+                else:
+                    sort_csv = "filtered_results.csv"
+                    
             else:
                 print("#####")
                 print("Please provide a BLAST results .txt file")
@@ -130,45 +136,45 @@ def filter_data(arg_dict):
 ##
 ######
 
-parser = ArgumentParser(prog='dupSearcher',
-                        formatter_class=argparse.RawDescriptionHelpFormatter,
-                        description="Search for genomic duplicated proteins")
-parser.add_argument("-t", "--text_file", metavar="", help="Blast raw results text file")
-parser.add_argument("-e", "--evalue", type=float, metavar="", default= 1e-05, help="BLAST e-value: number of expected hits of similar quality (score) that could be found just by chance.")
-parser.add_argument("-bs", "--bitscore", type=float, metavar="", default=50, help="BLAST bit-score: requires size of a sequence database in which the current match could be found just by chance.")
-parser.add_argument("-p", "--percentage", type=float, metavar="", default=80, help="Percentage of alignment in query")
-parser.add_argument("-o", "--out_folder", metavar= "", help="Results folder")
-parser.add_argument("-d", "--db_name", metavar="", help="New database name")
-parser.add_argument("-f", "--fasta_file", metavar="", help="Protein sequences FASTA file")
-parser.add_argument("-b", "--blast_folder", metavar="", help="BLAST binary folder")
-parser.add_argument("--debug", action="store_true", default=False)
-
-arg = parser.parse_args()
-arg_dict = vars(arg)
+if __name__ == '__main__':
+    parser = ArgumentParser(prog='dupSearcher',
+                            formatter_class=argparse.RawDescriptionHelpFormatter,
+                            description="Search for genomic duplicated proteins")
+    parser.add_argument("-t", "--text_file", metavar="", help="Blast raw results text file")
+    parser.add_argument("-e", "--evalue", type=float, metavar="", default= 1e-05, help="BLAST e-value: number of expected hits of similar quality (score) that could be found just by chance.")
+    parser.add_argument("-bs", "--bitscore", type=float, metavar="", default=50, help="BLAST bit-score: requires size of a sequence database in which the current match could be found just by chance.")
+    parser.add_argument("-p", "--percentage", type=float, metavar="", default=80, help="Percentage of alignment in query")
+    parser.add_argument("-o", "--out_folder", metavar= "", help="Results folder")
+    parser.add_argument("-d", "--db_name", metavar="", help="New database name")
+    parser.add_argument("-f", "--fasta_file", metavar="", help="Protein sequences FASTA file")
+    parser.add_argument("-b", "--blast_folder", metavar="", help="BLAST binary folder")
+    parser.add_argument("--debug", action="store_true", default=False)
+    
+    arg = parser.parse_args()
+    arg_dict = vars(arg)
+    filter_data(arg_dict)
  
 
      
-if arg.evalue is None:
-    print("#####")
-    print("Note e-value = 1e-05 is set by default")
-    print("#####")
-    print(parser.print_help())
-     
-if arg.bitscore is None:
-    print("#####")
-    print("Note bit_score = 50 is set by default")
-    print("#####")
-    print(parser.print_help())
+    if arg.evalue is None:
+        print("#####")
+        print("Note e-value = 1e-05 is set by default")
+        print("#####")
+        print(parser.print_help())
+         
+    if arg.bitscore is None:
+        print("#####")
+        print("Note bit_score = 50 is set by default")
+        print("#####")
+        print(parser.print_help())
+        
+    if arg.percentage is None:
+        print("#####")
+        print("Note alignment in query percentage = 80% is set by default")
+        print("#####")
+        print(parser.print_help())
     
-if arg.percentage is None:
-    print("#####")
-    print("Note alignment in query percentage = 80% is set by default")
-    print("#####")
-    print(parser.print_help())
-
-if arg.debug:
-    print("##DEBUG: ##")
-    print("arguments dictionary: ")
-    print(arg)
-
-filter_data(arg_dict)
+    if arg.debug:
+        print("##DEBUG: ##")
+        print("arguments dictionary: ")
+        print(arg)

@@ -7,7 +7,7 @@ Created on 13 dic. 2020
 import os
 import argparse
 from argparse import ArgumentParser
-import input_parser
+# import input_parser
 
 #import blast_caller
 import dup_searcher
@@ -41,30 +41,32 @@ import dup_searcher
     
 
 def get_dupannot(arg_dict):
-    compt = {}
-    compt["fasta"] = [".fa", ".faa", ".mpfa", ".fna", ".fsa", ".fas", ".fasta"]
-    compt["genbank"] = [".genbank", ".gb", ".gbf", ".gbff", ".gbk"]
-    compt["GFF"] = [".gff"]
-    
-    output_path = os.path.abspath(arg_dict["out_folder"])
-    
-    if arg_dict["annot_file"]:
-#         file_name_abs_path = os.path.abspath(arg_dict["annot_file"])
-#         name_file, extension = os.path.splitext(file_name_abs_path)
-        # get seq proteins FASTA file
-        # get annot csv file
-        input_parser.input_parser(arg_dict)
-        
-        arg_dict["fasta_file"]= "%s/proteins.fa" % output_path
-        arg_dict["annot_table"] = "%s/df.csv" % output_path
-        
-    # get filtered results file
+#     compt = {}
+#     compt["fasta"] = [".fa", ".faa", ".mpfa", ".fna", ".fsa", ".fas", ".fasta"]
+#     compt["genbank"] = [".genbank", ".gb", ".gbf", ".gbff", ".gbk"]
+#     compt["GFF"] = [".gff"]
+#     
+#     output_path = os.path.abspath(arg_dict["out_folder"])
+#     
+#     if arg_dict["annot_file"]:
+# #         file_name_abs_path = os.path.abspath(arg_dict["annot_file"])
+# #         name_file, extension = os.path.splitext(file_name_abs_path)
+#         
+#         # get seq proteins FASTA file
+#         # get annot csv file
+#         input_parser.input_parser(arg_dict)
+#         
+#         arg_dict["fasta_file"]= "%s/proteins.fa" % output_path
+#         arg_dict["annot_table"] = "%s/df.csv" % output_path
+#         
+#     # get filtered results file
     dup_searcher.filter_data(arg_dict)
     
     if (arg_dict["db_name"]):
         output_path= os.path.abspath(arg_dict["db_name"])
         sort_csv = "%s/filtered_results.csv" % output_path
     elif (arg_dict["out_folder"]):
+        output_path= os.path.abspath(arg_dict["out_folder"])
         sort_csv = "%s/filtered_results.csv" % output_path
     else:
         sort_csv = "filtered_results.csv"
@@ -82,6 +84,19 @@ def get_dupannot(arg_dict):
                 print("#####")
                 print("Please provide a .csv file")
                 print("#####")
+    
+    #get duplicated protein list
+    qseqid = list(sort_csv["qseqid"])
+    sseqid =list(sort_csv["sseqid"])
+    qseqid.extend(sseqid)
+    prot_id = set(qseqid)
+    print(prot_id)
+    
+    #get filtered_annot table
+    filtered_annot = arg_dict["annot_table"][arg_dict["annot_table"].protein_id.isin(prot_id)]
+    dup_annot = "%s/dup_annot.csv" % output_path
+    print(filtered_annot)
+    filtered_annot.to_csv(dup_annot, header=True, index=False)
     
   
             
