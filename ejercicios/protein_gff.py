@@ -134,7 +134,7 @@ def protein_recs(gff_file, ref_recs, output_path, debug=False):
                     #delete STOP symbols
                     protein_seq = gene_seq.translate(to_stop=True)
                     
-                    yield(SeqRecord(protein_seq, feature.qualifiers["ID"][0], "", ""))
+                    yield(SeqRecord(protein_seq, protID, "", ""))
 
     csv_file = "%s/df.csv" % output_path            
     annot_df.to_csv(csv_file, header=True)

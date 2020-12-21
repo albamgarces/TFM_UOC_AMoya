@@ -62,7 +62,8 @@ def filter_data(arg_dict):
     columns = ["qseqid", "sseqid", "pident", "length",
            "mismatch", "gapopen", "qstart", "qend",
            "sstart", "send", "evalue", "bitscore",
-           "qlen", "slen", "aln_pct"]
+           "qlen", "slen", "aln_pct_qlen", "aln_pct_slen"]
+
     if arg_dict["text_file"]:
         if arg_dict["fasta_file"]==None:
             
@@ -73,13 +74,16 @@ def filter_data(arg_dict):
                 #dataframe with raw blast results
                 raw_blast = pd.read_csv(file_name_abs_path, sep="\t",
                                         header = None, names=columns)
-                if (arg_dict["out_folder"]):
-                    output_path= os.path.abspath(arg_dict["out_folder"])
-                    sort_csv = "%s/filtered_results.csv" % output_path
-                else:
-                    sort_csv = "filtered_results.csv"
                 
-                return (sort_csv)    
+		## ERROR: remove to allow users to filter again
+
+		#if (arg_dict["out_folder"]):
+                #    output_path= os.path.abspath(arg_dict["out_folder"])
+                #    sort_csv = "%s/filtered_results.csv" % output_path
+                #else:
+                #    sort_csv = "filtered_results.csv"
+                #return (sort_csv)    
+
             ## TODO verify columns
             
             else:
@@ -106,21 +110,26 @@ def filter_data(arg_dict):
             raw_blast = pd.read_csv(raw_blast, sep="\t", header = None, names=columns)
             
 #fill aln_pct column
-    raw_blast["aln_pct"] = (raw_blast["length"]/raw_blast["qlen"]*100).round(2)
+    raw_blast["aln_pct_qlen"] = (raw_blast["length"]/raw_blast["qlen"]*100).round(2)
+    raw_blast["aln_pct_slen"] = (raw_blast["length"]/raw_blast["slen"]*100).round(2)
 
 #filter mirror pairs
     del_mirror =pd.DataFrame(np.sort(raw_blast[["qseqid", "sseqid"]], axis=1))
     raw_blast = raw_blast[~del_mirror.duplicated()]
           
 #when Blast_file_results is done, evalue>10 is gone
+    filter_pident= raw_blast["pident"] >= arg_dict["pident"]
+
     filter_evalue = raw_blast["evalue"] <= arg_dict["evalue"]
     filter_bitscore = raw_blast["bitscore"] >= arg_dict["bitscore"]
-    filter_alnpct = raw_blast["aln_pct"] >= arg_dict["percentage"]
+    filter_alnpct_slen = raw_blast["aln_pct_slen"] >= arg_dict["percentage"]
+    filter_alnpct_qlen = raw_blast["aln_pct_qlen"] >= arg_dict["percentage"]
     filter_id = raw_blast["qseqid"] != raw_blast["sseqid"]
-    filtered_results = raw_blast[filter_evalue & filter_bitscore & filter_alnpct & filter_id]
+
+    filtered_results = raw_blast[filter_pident & filter_evalue & filter_bitscore & filter_alnpct_qlen & filter_alnpct_slen & filter_id]
     
 #sort by aln_pct (desc), evalue(asc), bitscore(desc)
-    by_alnpct = filtered_results.sort_values(["aln_pct", "evalue", "bitscore"],
+    by_alnpct = filtered_results.sort_values(["aln_pct_qlen", "evalue", "bitscore"],
                                    ascending=[False, True, False])
 
 
@@ -140,7 +149,7 @@ def filter_data(arg_dict):
         sort_csv = "filtered_results.csv"
     
     by_alnpct.to_csv(sort_csv, header=True, index=False)
-    return(sort_csv)     
+    return(by_alnpct)     
     
     
 ######
@@ -154,7 +163,8 @@ if __name__ == '__main__':
     parser.add_argument("-t", "--text_file", metavar="", help="Blast raw results text file")
     parser.add_argument("-e", "--evalue", type=float, metavar="", default= 1e-05, help="BLAST e-value: number of expected hits of similar quality (score) that could be found just by chance.")
     parser.add_argument("-bs", "--bitscore", type=float, metavar="", default=50, help="BLAST bit-score: requires size of a sequence database in which the current match could be found just by chance.")
-    parser.add_argument("-p", "--percentage", type=float, metavar="", default=80, help="Percentage of alignment in query")
+    parser.add_argument("-pi", "--pident", type=int, metavar="", default=85, help="Percentage of similarity in aln")
+    parser.add_argument("-p", "--percentage", type=float, metavar="", default=85, help="Percentage of alignment in query")
     parser.add_argument("-o", "--out_folder", metavar= "", help="Results folder")
     parser.add_argument("-d", "--db_name", metavar="", help="New database name")
     parser.add_argument("-f", "--fasta_file", metavar="", help="Protein sequences FASTA file")
