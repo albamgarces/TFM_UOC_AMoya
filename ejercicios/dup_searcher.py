@@ -30,32 +30,39 @@ import blast_caller
 
 ######
 def filter_data(arg_dict):
+    
+    '''
+    get duplicated proteins and generate a filtered and sort dataframe depending on arguments values
+    
+    if a BLAST results text file is provided, it should have next columns names:
+    
+    #################################################################
+    # qseqid -> query (e.g., unknown gene) sequence id
+    # sseqid -> subject (e.g., reference genome) sequence id
+    # pident -> percentage of identical matches
+    # length -> alignment length (sequence overlap)
+    # mismatch -> number of mismatches
+    # gapopen -> number of gap openings
+    # qstart -> start of alignment in query
+    # qend -> end of alignment in query
+    # sstart -> start of alignment in subject
+    # send -> end of alignment in subject
+    # evalue -> expect value
+    #            number of expected hits of similar quality (score) that could be found just by chance.
+    #            Blast results are sorted by E-value by default (best hit in first line).
+    # bitscore -> bit score
+    #            requires size of a sequence database in which the current match could be found just by chance.
+    #            The higher the bit-score, the better the sequence similarity
+    # qlen -> Query sequence length
+    # slen -> Subject sequence length
+    # aln_pct -> alignment percentage in query (length/qlen*100)
+    ################################################################
+    
+    '''
     columns = ["qseqid", "sseqid", "pident", "length",
            "mismatch", "gapopen", "qstart", "qend",
            "sstart", "send", "evalue", "bitscore",
            "qlen", "slen", "aln_pct"]
-#################################################################
-# qseqid -> query (e.g., unknown gene) sequence id
-# sseqid -> subject (e.g., reference genome) sequence id
-# pident -> percentage of identical matches
-# length -> alignment length (sequence overlap)
-# mismatch -> number of mismatches
-# gapopen -> number of gap openings
-# qstart -> start of alignment in query
-# qend -> end of alignment in query
-# sstart -> start of alignment in subject
-# send -> end of alignment in subject
-# evalue -> expect value
-#            number of expected hits of similar quality (score) that could be found just by chance.
-#            Blast results are sorted by E-value by default (best hit in first line).
-# bitscore -> bit score
-#            requires size of a sequence database in which the current match could be found just by chance.
-#            The higher the bit-score, the better the sequence similarity
-# qlen -> Query sequence length
-# slen -> Subject sequence length
-# aln_pct -> alignement percentage in query (length/qlen*100)
-################################################################
-
     if arg_dict["text_file"]:
         if arg_dict["fasta_file"]==None:
             
@@ -71,7 +78,10 @@ def filter_data(arg_dict):
                     sort_csv = "%s/filtered_results.csv" % output_path
                 else:
                     sort_csv = "filtered_results.csv"
-                    
+                
+                return (sort_csv)    
+            ## TODO verify columns
+            
             else:
                 print("#####")
                 print("Please provide a BLAST results .txt file")
@@ -81,57 +91,58 @@ def filter_data(arg_dict):
             print("#####")
             print("Please provide either a BLAST results .txt file OR an annotation FASTA file")
             print("#####")
+            exit()
             
     elif arg_dict["fasta_file"]:
-        blast_caller.create_blast_results(arg_dict)
-        file_name_abs_path = os.path.abspath(arg_dict["fasta_file"])
-        name_file, extension = os.path.splitext(file_name_abs_path)
-        basename= os.path.basename(name_file)
+        if arg_dict["blast_folder"] is None:
+            print("#####")
+            print("Please provide BLAST binary folder")
+            print("#####")
+            print(parser.print_help())
+            exit()
         
-        if (arg_dict["db_name"]): 
-            output_path= os.path.abspath(arg_dict["db_name"])
-            raw_blast = pd.read_csv(output_path + "/BLAST_raw_results.txt",
-                                    sep="\t", header = None, names=columns)
-            sort_csv = "%s/filtered_results.csv" % output_path
-        elif (arg_dict["out_folder"]):
-            output_path= os.path.abspath(arg_dict["out_folder"])
-            raw_blast= pd.read_csv(output_path + "/" + basename + "_BLAST_raw_results.txt",
-                                   sep="\t", header = None, names=columns)
-            sort_csv = "%s/filtered_results.csv" % output_path
-        else:
-            raw_blast = pd.read_csv("BLAST_raw_results.txt",
-                                    sep="\t", header = None, names=columns)
-            sort_csv = "filtered_results.csv"
+        else:    
+            raw_blast = blast_caller.create_blast_results(arg_dict)
+            raw_blast = pd.read_csv(raw_blast, sep="\t", header = None, names=columns)
             
-    #fill aln_pct column
+#fill aln_pct column
     raw_blast["aln_pct"] = (raw_blast["length"]/raw_blast["qlen"]*100).round(2)
-    
-    #filter mirror pairs
+
+#filter mirror pairs
     del_mirror =pd.DataFrame(np.sort(raw_blast[["qseqid", "sseqid"]], axis=1))
     raw_blast = raw_blast[~del_mirror.duplicated()]
-    print(raw_blast)
-           
-    #when Blast_file_results is done, evalue>10 is gone
+          
+#when Blast_file_results is done, evalue>10 is gone
     filter_evalue = raw_blast["evalue"] <= arg_dict["evalue"]
     filter_bitscore = raw_blast["bitscore"] >= arg_dict["bitscore"]
     filter_alnpct = raw_blast["aln_pct"] >= arg_dict["percentage"]
     filter_id = raw_blast["qseqid"] != raw_blast["sseqid"]
     filtered_results = raw_blast[filter_evalue & filter_bitscore & filter_alnpct & filter_id]
     
-    #sort by aln_pct (desc), evalue(asc), bitscore(desc)
+#sort by aln_pct (desc), evalue(asc), bitscore(desc)
     by_alnpct = filtered_results.sort_values(["aln_pct", "evalue", "bitscore"],
-                                       ascending=[False, True, False])
-    
+                                   ascending=[False, True, False])
+
 
     print(by_alnpct)
     print("#####")
     print("%s pairs filtered from %s" % (by_alnpct.shape[0], raw_blast.shape[0]))
     print("#####")
+
+#save results as a .csv file
+    if (arg_dict["db_name"]): 
+        output_path= os.path.abspath(arg_dict["db_name"])
+        sort_csv = "%s/filtered_results.csv" % output_path
+    elif (arg_dict["out_folder"]):
+        output_path= os.path.abspath(arg_dict["out_folder"])
+        sort_csv = "%s/filtered_results.csv" % output_path
+    else:
+        sort_csv = "filtered_results.csv"
     
-    #save results as a .csv file
     by_alnpct.to_csv(sort_csv, header=True, index=False)
-
-
+    return(sort_csv)     
+    
+    
 ######
 ##
 ######

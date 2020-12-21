@@ -73,14 +73,16 @@ def create_blast_results(arg_dict):
 
         if (arg_dict["db_name"]):
             db_path_name = os.path.abspath(arg_dict["db_name"])+ "/" + arg_dict["db_name"]
-            output_file = os.path.abspath(arg_dict["db_name"]) + "/BLAST_raw_results.txt"
+            raw_blast = os.path.abspath(arg_dict["db_name"]) + "/BLAST_raw_results.txt"
         elif (arg_dict["out_folder"]):
             db_path_name = os.path.abspath(arg_dict["out_folder"]) + "/" + basename + "_db"
-            output_file = os.path.abspath(arg_dict["out_folder"]) + "/" + basename + "_BLAST_raw_results.txt"
+            raw_blast = os.path.abspath(arg_dict["out_folder"]) + "/" + basename + "_BLAST_raw_results.txt"
         else:
             db_path_name = basename + "_db"
-            output_file = "BLAST_raw_results.txt"
+            raw_blast = "BLAST_raw_results.txt"
     
+         
+        
         if (os.path.isfile(db_path_name + '.phr')):
             print ("+ BLAST database is already generated...")
         else:
@@ -88,8 +90,10 @@ def create_blast_results(arg_dict):
         
         ## create blastp outfile
             
-            blastp_caller(blastp_exe, arg_dict["fasta_file"], db_path_name, output_file)
-                 
+            blastp_caller(blastp_exe, arg_dict["fasta_file"], db_path_name, raw_blast)
+        
+        return (raw_blast)
+             
     else:
         print("#####")
         print("Please provide a FASTA file")
@@ -140,24 +144,26 @@ if __name__ == '__main__':
     
     arg = parser.parse_args()
     arg_dict = vars(arg)
-    create_blast_results(arg_dict)
+    
     if arg.fasta_file is None:
         print("#####")
         print("Please provide a proteins sequences FASTA file")
         print("#####")
         print(parser.print_help())
+        exit()
          
     if arg.blast_folder is None:
         print("#####")
         print("Please provide BLAST binary folder")
         print("#####")
         print(parser.print_help())
+        exit()
              
     if arg.debug:
         print("##DEBUG: ##")
         print("arguments dictionary: ")
         print(arg)
   
- 
+    create_blast_results(arg_dict)
   
     

@@ -32,15 +32,19 @@ def main (gbf_file, output_folder, debug=False):
         print ()
         
     gbf_parser_caller(gbf_file, output_path, debug)
+    
  
  
 #####     
 def gbf_parser_caller(gbf_file, output_path, debug):
     
-    out_file = "%s/proteins.fa" % output_path
+    prot_file = "%s/proteins.fa" % output_path
+    csv_file = "%s/df.csv" % output_path            
+
     
-    with open(out_file, "w") as output_handle:
+    with open(prot_file, "w") as output_handle:
         SeqIO.write(gbf_parser(gbf_file, output_path, debug=debug), output_handle, "fasta")
+    return (prot_file, csv_file)
     
 #####
 def gbf_parser(gbf_file, output_path, debug=False):
@@ -115,6 +119,7 @@ def gbf_parser(gbf_file, output_path, debug=False):
     
     csv_file = "%s/df.csv" % output_path            
     annot_df.to_csv(csv_file, header=True)
+    
     
     if (debug):
         print("## DEBUG: dataframe")
