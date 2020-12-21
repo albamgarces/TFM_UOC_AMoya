@@ -114,7 +114,7 @@ def gbf_parser(gbf_file, output_path, debug=False):
                     gene_seq = Seq.Seq(feature.qualifiers["translation"][0])
                 else:
                     pass
-                yield(SeqRecord(gene_seq, feature.qualifiers["locus_tag"][0],"",""))
+                yield(SeqRecord(gene_seq, protID,"",""))
         
     
     csv_file = "%s/df.csv" % output_path            

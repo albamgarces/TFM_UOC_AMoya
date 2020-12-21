@@ -60,9 +60,9 @@ def get_dupannot(arg_dict):
     compt["genbank"] = [".genbank", ".gb", ".gbf", ".gbff", ".gbk"]
     compt["GFF"] = [".gff"]
 #     
-    output_path = os.path.abspath(arg_dict["out_folder"])
+    output_path = os.path.abspath(arg_dict["out_folder"]) # ERROR: check user provides output
 #     
-#        #user provides an GFF/GBK file
+#   #user provides an GFF/GBK file
     if arg_dict["text_file"] is None:
         if arg_dict["annot_file"]:
             file_name_abs_path = os.path.abspath(arg_dict["annot_file"])
@@ -95,60 +95,83 @@ def get_dupannot(arg_dict):
                     print(parser.print_help())
                     exit()
             ## TODO check annot_table and fasta_file headers are the same ##
-            
-#         
-#     # get filtered results file
-    sort_csv = dup_searcher.filter_data(arg_dict)
-    
-    annot_table = pd.read_csv(csv_file)
-    sort_csv = pd.read_csv(sort_csv)
 
+        # ERROR: check user provides BLAST folder if required
+
+	## create blast results
+        filtered_data = dup_searcher.filter_data(arg_dict)
+        annot_table = pd.read_csv(csv_file, index_col=0)
+    
+    else:
+        # get filtered results file
+        filtered_data = dup_searcher.filter_data(arg_dict)
+
+        # ERROR: check user provides Annotation CSV
+
+        annot_table = pd.read_csv(arg_dict["annot_table"], index_col=0)
+        ## debug 
+        #print (annot_table)
+    	
     #get duplicated protein list
-    qseqid = list(sort_csv["qseqid"])
-    sseqid =list(sort_csv["sseqid"])
+    qseqid = list(filtered_data["qseqid"])
+    sseqid =list(filtered_data["sseqid"])
     qseqid.extend(sseqid)
-    prot_id = set(qseqid)
-   
+    prot_id = list(set(qseqid))
     
     #get filtered_annot table
-    filtered_annot = annot_table[annot_table.locus_tag.isin(prot_id)]
-    dup_annot = "%s/dup_annot.csv" % output_path
-    print(filtered_annot)
-    filtered_annot.to_csv(dup_annot, header=True, index=False)
+    filtered_annot = annot_table.loc[prot_id]
+
+    # keep or maintain pseudogenes
+    if (arg_dict['pseudo']):
+        # use them
+        print ("+ Pseudogenes would be used in the analysis")
+    else:
+        filtered_annot = filtered_annot.loc[filtered_annot['pseudo'] != True] 
+
+    ## debug 
+    #print (filtered_annot)    
+    dup_annot = get_dup(filtered_data, filtered_annot)
+
+    dup_annot_file = "%s/dup_annot.csv" % output_path
+    dup_annot.to_csv(dup_annot_file, header=True)
     return(dup_annot)
 
-def get_dup(sort_csv, dup_annot):
+
+def get_dup(blast_results_df, dup_annot_df):
     
     ''' 
     get duplicated id for each duplicated protein on annotation table
     
     '''
     
-    # first round
-    relations_df = defaultdict(list) 
-    for index, row in sort_csv.iterrows():
-        relations_df[row['qseqid']].append(row['sseqid'])
+    # 1st round
+    relations_dict = defaultdict(list) 
+    for index, row in blast_results_df.iterrows():
+        relations_dict[row['qseqid']].append(row['sseqid'])
     
-    print (relations_df)
+    ## debug
+    # print (relations_dict)
 
     ## 2nd round
-    
-    new_relations_df = defaultdict(list)
+    new_relations_dict = defaultdict(list)
     dups=0
-    for key, value in relations_df.items():
-        print ()
-        print ("key: " + key)
-        print ("value: " + str(value))
+    for key, value in relations_dict.items():
+        ## debug
+        ## print ()
+        ## debug
+        ## print ("key: " + key)
+        ## debug
+        ## print ("value: " + str(value))
 
         stop=False
-        
-        for dup_id, new_value in new_relations_df.items():
+        for dup_id, new_value in new_relations_dict.items():
             if key in new_value:
                 stop=True
-                print ("Belongs to group: " + dup_id)
+                ## debug
+                ## print ("Belongs to group: " + dup_id)
 
         if not stop:
-            for key2, value2 in relations_df.items():
+            for key2, value2 in relations_dict.items():
                 if (key == key2):
                     continue
                 else:
@@ -158,31 +181,30 @@ def get_dup(sort_csv, dup_annot):
                                 value.extend(i)
 
             dups += 1
-            value.extend(key)
-            new_relations_df["dup_"+str(dups)] = value
-            print(new_relations_df)
-            print("**")
-
-    print ()
-    print (new_relations_df)
-    
-    annot_table.loc["duplicate_id"] = annot_table.locus_tag.map(new_relations_df)
-    
-    
-    
-  
+            value.append(key)
+            new_relations_dict["dup_"+str(dups)] = value
+            ## debug
+            ## print(new_relations_dict)
+            ## debug
+            ## print("**")
             
+    ## print ()
+    ## print (new_relations_dict)
+    ## print ()
+
+    ## Create data
+    df_data = pd.DataFrame(columns=('index', 'dup_id'))
+    for dup_id, new_value in new_relations_dict.items():
+        for i in new_value:
+             df_data.loc[i] = (i, dup_id)
+
+    ## merge information    
+    dup_annot_df = dup_annot_df.join(df_data)
+    dup_annot_df = dup_annot_df.drop(columns='index')
+    return (dup_annot_df)            
         
-        
-    
-        
-    
-    
-    
-    
-    
-    
-    
+
+############    
 parser = ArgumentParser(prog='dupAnnotation',
                         formatter_class=argparse.RawDescriptionHelpFormatter,
                         description="Get an annotation file with duplicated protein on genome")
@@ -198,8 +220,10 @@ parser.add_argument("-c", "--annot_table", metavar="", help="Genome annotation .
 parser.add_argument("-t", "--text_file", metavar="", help="Blast raw results text file")
 parser.add_argument("-e", "--evalue", type=float, metavar="", default= 1e-05, help="BLAST e-value: number of expected hits of similar quality (score) that could be found just by chance.")
 parser.add_argument("-bs", "--bitscore", type=float, metavar="", default=50, help="BLAST bit-score: requires size of a sequence database in which the current match could be found just by chance.")
-parser.add_argument("-p", "--percentage", type=float, metavar="", default=80, help="Percentage of alignment in query")
+parser.add_argument("-p", "--percentage", type=float, metavar="", default=85, help="Percentage of alignment in query")
+parser.add_argument("-pi", "--pident", type=int, metavar="", default=85, help="Percentage of identity in alignment")
 ###
+parser.add_argument("--pseudo", action="store_true", default=False, help="Wether to use pseudogenes or not")
 ###
 parser.add_argument("-o", "--out_folder", metavar= "", help="Results folder")
 parser.add_argument("--debug", action="store_true", default=False)
