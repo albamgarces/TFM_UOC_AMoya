@@ -85,6 +85,7 @@ def create_blast_results(arg_dict):
         
         if (os.path.isfile(db_path_name + '.phr')):
             print ("+ BLAST database is already generated...")
+            exit()
         else:
             makeblastdb(makeblastdb_exe, arg_dict["fasta_file"], db_path_name)
         

@@ -109,7 +109,7 @@ def filter_data(arg_dict):
             raw_blast = blast_caller.create_blast_results(arg_dict)
             raw_blast = pd.read_csv(raw_blast, sep="\t", header = None, names=columns)
             
-#fill aln_pct column
+#fill aln_pct columns
     raw_blast["aln_pct_qlen"] = (raw_blast["length"]/raw_blast["qlen"]*100).round(2)
     raw_blast["aln_pct_slen"] = (raw_blast["length"]/raw_blast["slen"]*100).round(2)
 
@@ -128,15 +128,15 @@ def filter_data(arg_dict):
 
     filtered_results = raw_blast[filter_pident & filter_evalue & filter_bitscore & filter_alnpct_qlen & filter_alnpct_slen & filter_id]
     
-#sort by aln_pct (desc), evalue(asc), bitscore(desc)
+#sort by aln_pct_qlen (desc), evalue(asc), bitscore(desc)
     by_alnpct = filtered_results.sort_values(["aln_pct_qlen", "evalue", "bitscore"],
                                    ascending=[False, True, False])
 
 
-    print(by_alnpct)
-    print("#####")
-    print("%s pairs filtered from %s" % (by_alnpct.shape[0], raw_blast.shape[0]))
-    print("#####")
+#     print(by_alnpct)
+#     print("#####")
+#     print("%s pairs filtered from %s" % (by_alnpct.shape[0], raw_blast.shape[0]))
+#     print("#####")
 
 #save results as a .csv file
     if (arg_dict["db_name"]): 

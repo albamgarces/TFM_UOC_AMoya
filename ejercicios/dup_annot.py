@@ -94,11 +94,11 @@ def get_dupannot(arg_dict):
                     print("#####")
                     print(parser.print_help())
                     exit()
-            ## TODO check annot_table and fasta_file headers are the same ##
+            ## ToDo check annot_table and fasta_file headers are the same ##
 
         # ERROR: check user provides BLAST folder if required
 
-	## create blast results
+## create blast results
         filtered_data = dup_searcher.filter_data(arg_dict)
         annot_table = pd.read_csv(csv_file, index_col=0)
     
@@ -111,7 +111,6 @@ def get_dupannot(arg_dict):
         annot_table = pd.read_csv(arg_dict["annot_table"], index_col=0)
         ## debug 
         #print (annot_table)
-    	
     #get duplicated protein list
     qseqid = list(filtered_data["qseqid"])
     sseqid =list(filtered_data["sseqid"])
@@ -134,6 +133,9 @@ def get_dupannot(arg_dict):
 
     dup_annot_file = "%s/dup_annot.csv" % output_path
     dup_annot.to_csv(dup_annot_file, header=True)
+    print("#####")
+    print("Found %s groups of duplicates with a total of %s proteins duplicated from %s proteins on the original file" % (len(dup_annot["dup_id"].unique()), dup_annot.shape[0], annot_table.shape[0]))
+    print("#####")
     return(dup_annot)
 
 
@@ -196,7 +198,7 @@ def get_dup(blast_results_df, dup_annot_df):
     df_data = pd.DataFrame(columns=('index', 'dup_id'))
     for dup_id, new_value in new_relations_dict.items():
         for i in new_value:
-             df_data.loc[i] = (i, dup_id)
+            df_data.loc[i] = (i, dup_id)
 
     ## merge information    
     dup_annot_df = dup_annot_df.join(df_data)
@@ -207,21 +209,22 @@ def get_dup(blast_results_df, dup_annot_df):
 ############    
 parser = ArgumentParser(prog='dupAnnotation',
                         formatter_class=argparse.RawDescriptionHelpFormatter,
-                        description="Get an annotation file with duplicated protein on genome")
-parser.add_argument("-a", "--annot_file", metavar="", help="Annotation file: genbank or GFF")
-parser.add_argument("-r", "--ref_file", metavar="", help="Genome references FASTA file")
+                        description="Get an annotation file with duplicated protein on genome.")
+parser.add_argument("-a", "--annot_file", metavar="", help="Annotation file: genbank or GFF.")
+parser.add_argument("-r", "--ref_file", metavar="", help="Genome references FASTA file.")
 ###
-parser.add_argument("-d", "--db_name", metavar="", help="New database name")
-parser.add_argument("-f", "--fasta_file", metavar="", help="Protein sequences FASTA file")
-parser.add_argument("-b", "--blast_folder", metavar="", help="BLAST binary folder")
-parser.add_argument("-c", "--annot_table", metavar="", help="Genome annotation .csv file previously analyzed")
+parser.add_argument("-d", "--db_name", metavar="", help="New database name.")
+parser.add_argument("-f", "--fasta_file", metavar="", help="Protein sequences FASTA file.")
+#ToDo add deafault blast_folder
+parser.add_argument("-b", "--blast_folder", metavar="", default="/usr/bin", help="BLAST binary folder.  **Note blast_folder=/usr/bin is set by default**")
+parser.add_argument("-c", "--annot_table", metavar="", help="Genome annotation .csv file previously analyzed.")
 
-###
-parser.add_argument("-t", "--text_file", metavar="", help="Blast raw results text file")
-parser.add_argument("-e", "--evalue", type=float, metavar="", default= 1e-05, help="BLAST e-value: number of expected hits of similar quality (score) that could be found just by chance.")
-parser.add_argument("-bs", "--bitscore", type=float, metavar="", default=50, help="BLAST bit-score: requires size of a sequence database in which the current match could be found just by chance.")
-parser.add_argument("-p", "--percentage", type=float, metavar="", default=85, help="Percentage of alignment in query")
-parser.add_argument("-pi", "--pident", type=int, metavar="", default=85, help="Percentage of identity in alignment")
+### ToDo: add to description default value
+parser.add_argument("-t", "--text_file", metavar="", help="Blast raw results text file.")
+parser.add_argument("-e", "--evalue", type=float, metavar="", default= 1e-05, help="BLAST e-value: number of expected hits of similar quality (score) that could be found just by chance. **Note e-value = 1e-05 is set by default**")
+parser.add_argument("-bs", "--bitscore", type=float, metavar="", default=50, help="BLAST bit-score: requires size of a sequence database in which the current match could be found just by chance. **Note bit_score = 50 is set by default**")
+parser.add_argument("-p", "--percentage", type=float, metavar="", default=85, help="Percentage of alignment in query. **Note percentage = 85 is set by default**")
+parser.add_argument("-pi", "--pident", type=int, metavar="", default=85, help="Percentage of identity in alignment. **Note pident = 85 is set by default**")
 ###
 parser.add_argument("--pseudo", action="store_true", default=False, help="Wether to use pseudogenes or not")
 ###
@@ -230,30 +233,19 @@ parser.add_argument("--debug", action="store_true", default=False)
 
 arg = parser.parse_args()
 arg_dict = vars(arg)
+print("######")
+print("e-value = %s" % arg.evalue)
+print("bitscore = %s" % arg.bitscore)
+print("percentage alignment in query = %s" % arg.percentage)
+print("percentage of identity = %s" % arg.pident)
+print("blast_folder = %s" % arg.blast_folder)
+print("######")
 
 if arg.annot_file is None and arg.fasta_file is None and arg.text_file is None:
     print("######")
     print(parser.print_help())
     print("######")
     exit() 
-    
-if arg.evalue is None:
-    print("#####")
-    print("Note e-value = 1e-05 is set by default")
-    print("#####")
-    print(parser.print_help())
-     
-if arg.bitscore is None:
-    print("#####")
-    print("Note bit_score = 50 is set by default")
-    print("#####")
-    print(parser.print_help())
-    
-if arg.percentage is None:
-    print("#####")
-    print("Note alignment in query percentage = 80% is set by default")
-    print("#####")
-    print(parser.print_help())
 
 if arg.debug:
     print("##DEBUG: ##")
@@ -263,5 +255,6 @@ if arg.debug:
 
 if __name__ == '__main__':
     get_dupannot(arg_dict)
+    
 
 
