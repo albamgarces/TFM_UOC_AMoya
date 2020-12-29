@@ -51,19 +51,24 @@ def gbf_parser(gbf_file, output_path, debug=False):
     
     #create an empty dataframe. The most important info as first columns
     #all the other file info will be filled next
-    columns = ['locus_tag', 'protein_id', 'gene', 'start',
+    columns = ['rec_id', 'locus_tag', 'protein_id', 'gene', 'start',
                'end', 'strand', 'pseudo', 'product', 'db_xref',
                'EC_number', 'old_locus_tag', 'inference']
     annot_df = pd.DataFrame(data=None, columns=columns)
+    genome_length = pd.DataFrame(data=None, columns=["length"])
     
     for rec in SeqIO.parse(gbf_file, "genbank"):
+        #get genome length for BioCircos plotting  
+        ID = rec.id
+        genome_length.loc[ID,["length"]]=[len(rec.seq)]
+                
         if (debug):
             print("## DEBUG: rec")
             print(rec)
             print()
             
         for feature in rec.features:
-            
+              
             #sort by CDS type. Duplicate genes analysis needs coding regions to proteins.
             if feature.type=="CDS":
                 if int(feature.strand) > 0:
@@ -78,7 +83,7 @@ def gbf_parser(gbf_file, output_path, debug=False):
 #                     print(protID)
 #                     print()
                         
-                annot_df.loc[protID, ["start", "end", "strand"]] = [feature.location.nofuzzy_start, feature.location.nofuzzy_end, strand]
+                annot_df.loc[protID, ["rec_id", "start", "end", "strand"]] = [ID, feature.location.nofuzzy_start, feature.location.nofuzzy_end, strand]
                 qualif = feature.qualifiers
 #                 if (debug):
 #                     print("#DEBUG: Qualifiers")
@@ -119,13 +124,17 @@ def gbf_parser(gbf_file, output_path, debug=False):
     
     csv_file = "%s/df.csv" % output_path            
     annot_df.to_csv(csv_file, header=True)
+    csv_length = "%s/length.csv" % (output_path)            
+    genome_length.to_csv(csv_length, header=False)
     
     
+  
     if (debug):
         print("## DEBUG: dataframe")
         print(annot_df)
                
-               
+      
+  
 if __name__ == "__main__":
     if len(sys.argv) != 3:
         print (__doc__)

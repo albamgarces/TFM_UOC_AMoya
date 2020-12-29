@@ -56,15 +56,19 @@ def gff_parser_caller(gff_file, ref_file, output_path, debug):
 def protein_recs(gff_file, ref_recs, output_path, debug=False):
     #create an empty dataframe. The most important info as first columns
     #all the other file info will be filled next
-    columns = ['locus_tag', 'protein_id', 'gene',  'start',
+    columns = ['rec_id', 'locus_tag', 'protein_id', 'gene',  'start',
                'end', 'strand', 'pseudo', 'product', 'Dbxref', 'inference']
     annot_df = pd.DataFrame(data=None, columns=columns)
+    genome_length = pd.DataFrame(data=None, columns=["length"])
     
     with open(gff_file) as in_handle:
         ##parse the output. Generate SeqRecord and SeqFeatures for predictions
         ##sort by CDS type. Duplicate genes analysis just needs coding regions to proteins.
         limit_info = dict(gff_type=["CDS"])    
         for rec in GFF.parse(in_handle, limit_info = limit_info, base_dict=ref_recs):
+            #get genome length for BioCircos plotting  
+            ID = rec.id
+            genome_length.loc[ID,["length"]]=[len(rec.seq)]
             if (debug):
                 print ("## DEBUG: rec")
                 print (rec)
@@ -103,7 +107,7 @@ def protein_recs(gff_file, ref_recs, output_path, debug=False):
 #                     print(protID)
 #                     print()
                 
-                annot_df.loc[protID, ["type", "start", "end", "strand"]] = [feature.type, feature.location.nofuzzy_start, feature.location.nofuzzy_end, strand]
+                annot_df.loc[protID, ["rec_id", "type", "start", "end", "strand"]] = [ID, feature.type, feature.location.nofuzzy_start, feature.location.nofuzzy_end, strand]
                 qualif = feature.qualifiers
 #                 if (debug):
 #                     print("#DEBUG: Qualifiers")
@@ -138,12 +142,23 @@ def protein_recs(gff_file, ref_recs, output_path, debug=False):
 
     csv_file = "%s/df.csv" % output_path            
     annot_df.to_csv(csv_file, header=True)
+    csv_length = "%s/length.csv" % (output_path)            
+    genome_length.to_csv(csv_length, header=True)
     
     if (debug):
         print("##DEBUG: Dataframe")
         print(annot_df)
         print()
-        
+    
+    #get genome length for BioCircos plotting  
+    genome_length = pd.DataFrame(data=None, columns=["length"])
+    ID = rec.id
+    length = len(rec.seq)
+    genome_length.loc[ID,["length"]]=[length]
+    csv_length = "%s/%s_length.csv" % (output_path, rec.id)            
+    genome_length.to_csv(csv_length, header=True)
+    return(csv_length)
+    
 if __name__ == "__main__":
     if len(sys.argv) != 4:
         print (__doc__)

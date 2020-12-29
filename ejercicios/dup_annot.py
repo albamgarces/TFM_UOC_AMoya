@@ -184,7 +184,7 @@ def get_dup(blast_results_df, dup_annot_df):
 
             dups += 1
             value.append(key)
-            new_relations_dict["dup_"+str(dups)] = value
+            new_relations_dict[str(dups)] = value
             ## debug
             ## print(new_relations_dict)
             ## debug
