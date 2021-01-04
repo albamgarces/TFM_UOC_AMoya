@@ -137,9 +137,10 @@ if __name__ == '__main__':
     parser = ArgumentParser(prog='makeblastDB',
                             formatter_class=argparse.RawDescriptionHelpFormatter,
                             description="Create a BLAST database")
+    requiredNamed = parser.add_argument_group('required named arguments')
     parser.add_argument("-d", "--db_name", metavar="", help="New database name")
-    parser.add_argument("-f", "--fasta_file", metavar="", help="Protein sequences FASTA file")
-    parser.add_argument("-b", "--blast_folder", metavar="", help="BLAST binary folder")
+    requiredNamed.add_argument("-f", "--fasta_file", metavar="", help="Protein sequences FASTA file", required = True)
+    requiredNamed.add_argument("-b", "--blast_folder", metavar="", help="BLAST binary folder", required = True)
     parser.add_argument("-o", "--out_folder", metavar= "", help="Results folder")
     parser.add_argument("--debug", action="store_true", default=False)   
     

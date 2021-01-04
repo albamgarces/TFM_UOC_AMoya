@@ -63,6 +63,9 @@ def input_parser(arg_dict):
         ## call gbf_parser
             prot_file, csv_file = protein_gbf.gbf_parser_caller(arg_dict["annot_file"], output_path, arg_dict["debug"])
             return (prot_file, csv_file)
+        if arg_dict["debug"]:
+                print("## DEBUG: prot_file ")
+                print(prot_file)
     
     elif extension in compt["GFF"]:
         if arg_dict["ref_file"]==None:
@@ -90,8 +93,11 @@ def input_parser(arg_dict):
                 print("######")
     else:
         print("######")
-        print("Compatible file formats: ")
-        print(compt)
+        print("Compatible annot_file formats: ")
+        print("#GenBank: ")
+        print(compt["genbank"])
+        print("#GFF3: ")
+        print(compt["GFF"])
         print("######")
        
 
@@ -104,10 +110,11 @@ if __name__ == '__main__':
     parser = ArgumentParser(prog='inputParser',
                             formatter_class=argparse.RawDescriptionHelpFormatter,
                             description="Get proteins sequences from annotation file")
-    parser.add_argument("-a", "--annot_file", metavar="", help="Annotation file: genbank or GFF")
+    requiredNamed = parser.add_argument_group('required named arguments')
+    requiredNamed.add_argument("-a", "--annot_file", metavar="", help="Annotation file: genbank or GFF", required=True)
+    requiredNamed.add_argument("-o", "--out_folder", metavar= "", help="Results folder", required=True)
     parser.add_argument("-r", "--ref_file", metavar="", help="Genome references FASTA file")
     #parser.add_argument("-p", "--prot_file", metavar="", help="Protein sequence file")
-    parser.add_argument("-o", "--out_folder", metavar= "", help="Results folder")
     parser.add_argument("--debug", action="store_true", default=False)   
     
     arg = parser.parse_args()
