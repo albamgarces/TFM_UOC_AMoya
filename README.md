@@ -3,6 +3,6 @@ Bioinformatics Master's dissertation [PDF](https://github.com/albamgarces/TFM_UO
 
 Update. [BacDup](https://github.com/JFsanchezherrero/BacDup.git) shows how we are still developping the project after the master ending.
 
-Web application [BacDupWeb] (https://bacdupweb.shinyapps.io/BacDupWeb8/) and the code repository: https://github.com/dibanezmal/BACDUPWEB.git
+Web application [BacDupWeb](https://bacdupweb.shinyapps.io/BacDupWeb8/) and the code repository: https://github.com/dibanezmal/BACDUPWEB.git
 
 ![Workflow](workflow.png)
